@@ -1,5 +1,5 @@
-﻿using Booking.Domain.Enums;
-using System;
+﻿using System;
+using Booking.Domain.Enums;
 
 namespace Booking.Domain.Entities
 {
