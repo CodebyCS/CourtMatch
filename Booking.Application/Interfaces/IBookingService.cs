@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Booking.Application.DTOs;
 
-/// <summary>
-/// Summary description for Class1
-/// </summary>
-public class Class1
+namespace Booking.Application.Interfaces
 {
-	public Class1()
-	{
-		//
-		// TODO: Add constructor logic here
-		//
-	}
+    public interface IBookingService
+    {
+        Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto);
+        //Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
+        //Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
+        //Task<bool> DeleteBookingAsync(Guid bookingId);
+    }
 }
