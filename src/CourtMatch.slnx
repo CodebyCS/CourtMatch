@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/BuildingBlocks/" />
+  <Folder Name="/BuildingBlocks/Shared/">
+    <Project Path="BuildingBlocks/Shared/Shared.Contracts/Shared.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Booking/">
+    <Project Path="Modules/Booking/Booking.API/Booking.API.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Catalog/">
+    <Project Path="Modules/Catalog/Catalog.Application/Catalog.Application.csproj" />
+    <Project Path="Modules/Catalog/Catalog.Domain/Catalog.Domain.csproj" />
+    <Project Path="Modules/Catalog/FacilitiesCatalog.API/FacilitiesCatalog.API.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Games/">
+    <Project Path="Modules/Games/Games.API/Games.API.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Identity/">
+    <Project Path="Modules/Identity/Identity.API/Identity.API.csproj" />
+  </Folder>
+</Solution>
