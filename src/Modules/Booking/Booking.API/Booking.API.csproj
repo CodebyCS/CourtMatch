@@ -25,5 +25,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Shared.Contracts\Shared.Contracts.csproj" />
   </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Booking.Application\Booking.Application.csproj" />
+		<ProjectReference Include="..\Booking.Infrastructure\Booking.Infrastructure.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Controllers\" />
+	</ItemGroup>
 
 </Project>
