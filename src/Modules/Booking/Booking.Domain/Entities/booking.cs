@@ -44,5 +44,10 @@ namespace Booking.Domain.Entities
 
             Status = BookingStatus.Cancelled;
         }
+        public void UpdateDetails(DateTime newSchedule, decimal newTotalPrice)
+        {
+            Schedule = newSchedule;
+            TotalPrice = newTotalPrice;
+        }
     }
 }

@@ -7,8 +7,8 @@ namespace Booking.Application.Interfaces
     public interface IBookingService
     {
         Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto);
-        //Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
-        //Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
-        //Task<bool> DeleteBookingAsync(Guid bookingId);
+        Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
+        Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
+        Task<bool> DeleteBookingAsync(Guid bookingId);
     }
 }

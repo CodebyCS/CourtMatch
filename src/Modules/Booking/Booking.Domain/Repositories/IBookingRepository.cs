@@ -11,5 +11,6 @@ namespace Booking.Domain.Repositories
         Task<IEnumerable<Entities.Booking>> GetByCourtIdAsync(Guid courtId);
         Task AddAsync(Entities.Booking booking);
         void Update(Entities.Booking booking);
+        void Delete(Entities.Booking booking);
     }
 }

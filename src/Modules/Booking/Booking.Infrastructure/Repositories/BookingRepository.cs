@@ -39,5 +39,10 @@ namespace Booking.Infrastructure.Repositories
             _context.Bookings.Update(booking);
             _context.SaveChanges();
         }
+        public void Delete(Domain.Entities.Booking booking)
+        {
+            _context.Bookings.Remove(booking);
+            _context.SaveChanges();
+        }
     }
 }

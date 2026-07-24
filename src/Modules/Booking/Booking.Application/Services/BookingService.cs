@@ -34,8 +34,56 @@ namespace Booking.Application.Services
 
             return booking.Id;
         }
-        //Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
-        //Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
-        //Task<bool> DeleteBookingAsync(Guid bookingId);
+
+        public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            return new BookingDto(
+                booking.Id,
+                booking.CourtId,
+                booking.HostPlayerId,
+                booking.Schedule,
+                booking.TotalPrice,
+                booking.Status.ToString()
+            );
+
+
+        }
+
+        public async Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            if (updateBookingDto.Schedule < DateTime.UtcNow)
+            {
+                throw new ArgumentException("Schedule date cannot be in the past.");
+            }
+
+            // Atualiza os dados da Entidade
+            booking.UpdateDetails(updateBookingDto.Schedule, updateBookingDto.TotalPrice);
+
+            _bookingRepository.Update(booking);
+
+            return new BookingDto(
+                booking.Id,
+                booking.CourtId,
+                booking.HostPlayerId,
+                booking.Schedule,
+                booking.TotalPrice,
+                booking.Status.ToString()
+            );
+        }
+
+        public async Task<bool>DeleteBookingAsync(Guid bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return false;
+
+            _bookingRepository.Delete(booking);
+            return true;
+        }
     }
 }
