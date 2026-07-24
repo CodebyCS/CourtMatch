@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Shared.Contracts\Shared.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
