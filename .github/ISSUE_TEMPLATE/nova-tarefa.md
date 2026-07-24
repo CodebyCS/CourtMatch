@@ -2,14 +2,14 @@
 name: Nova Tarefa
 about: Cria um cartão estruturado no Kanban para o desenvolvimento de um Requisito
   Funcional.
-title: 'RF__: [Nome da Funcionalidade]'
+title: '[Nome da Funcionalidade]'
 labels: ''
 assignees: ''
 
 ---
 
 ## RF relacionado
-RF__ - [Nome do Requisito]
+RF - [Nome do Requisito]
 
 ## O que fazer
 [Descreve de forma curta e objetiva o que este endpoint ou funcionalidade precisa de receber, processar e devolver]
