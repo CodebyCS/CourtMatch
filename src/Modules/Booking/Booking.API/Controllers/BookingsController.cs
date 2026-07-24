@@ -1,12 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Threading.Tasks;
+using Booking.Application.DTOs;
+using Booking.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.API.Controllers
 {
-    public class BookingsController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BookingsController : ControllerBase
     {
-        public IActionResult Index()
+         private readonly IBookingService _bookingService;
+
+         public BookingsController(IBookingService bookingService)
+         {
+             _bookingService = bookingService;
+         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createBookingDto)
         {
-            return View();
+            try
+            {
+                var bookingId = await _bookingService.CreateBookingAsync(createBookingDto);
+                return CreatedAtAction(nameof(CreateBooking), new { id = bookingId }, new { id = bookingId });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

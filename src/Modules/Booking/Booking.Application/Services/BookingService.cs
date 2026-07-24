@@ -19,20 +19,18 @@ namespace Booking.Application.Services
         public async Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto)
         {
             //validate date
-            if (dto.Schedule < DateTime.UtcNow)
+            if (createBookingDto.Schedule < DateTime.UtcNow)
             {
                 throw new ArgumentException("Schedule date cannot be in the past.");
             }
+            var booking = new Domain.Entities.Booking(
+                createBookingDto.CourtId,
+                createBookingDto.HostPlayerId,
+                createBookingDto.Schedule,
+                createBookingDto.TotalPrice
+            );
 
-            var booking = new Domain.Entities.Booking
-            {
-                dto.CourtId,
-                dto.HostPlayerId,
-                dto.Schedule,
-                dto.TotalPrice
-            };
-
-            await _bookingRepository.AddAsysnc(booking);
+            await _bookingRepository.AddAsync(booking);
 
             return booking.Id;
         }
