@@ -12,6 +12,6 @@ namespace Catalog.Domain.Repositories
         Task<IEnumerable<TimeSlot>> GetAllAsync();
         Task AddAsync(TimeSlot timeSlot);
         Task UpdateAsync(TimeSlot timeSlot);
-        Task DeleteAsync(TimeSlot Name);
+        Task DeleteAsync(Guid id);
     }
 }

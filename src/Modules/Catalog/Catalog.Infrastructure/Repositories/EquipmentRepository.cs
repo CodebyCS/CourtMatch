@@ -4,13 +4,14 @@ using Catalog.Domain;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Catalog.Domain.Repository;
+using Catalog.Domain.Repositories;
 using Catalog.Domain.Entities;
-using FacilitiesCatalog.API;
+using Catalog.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Infrastructure.Repositories
 {
-    public interface EquipmentRepository : IEquipmentRepository
+    public class EquipmentRepository : IEquipmentRepository
     {
         private readonly CatalogDbContext _context;
 
@@ -28,6 +29,21 @@ namespace Catalog.Infrastructure.Repositories
             return await _context.Set<Equipment>().ToListAsync();
         }
 
-     
+        public async Task UpdateAsync(Equipment equipment)
+        {
+            _context.Set<Equipment>().Update(equipment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var equipment = await _context.Set<Equipment>().FindAsync(id);
+            if (equipment != null)
+            {
+                _context.Set<Equipment>().Remove(equipment);
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }
