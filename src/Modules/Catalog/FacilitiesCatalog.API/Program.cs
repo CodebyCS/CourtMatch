@@ -1,3 +1,7 @@
+﻿using Catalog.Domain.Repositories;
+using Catalog.Infrastructure.Data;
+using Catalog.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace FacilitiesCatalog.API
 {
@@ -13,6 +17,13 @@ namespace FacilitiesCatalog.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContext<CatalogDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddScoped<ICourtRepository, CourtRepository>();
+            builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+            builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
 
             var app = builder.Build();
 

@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Catalog.Domain.Repository
+namespace Catalog.Domain.Repositories
 {
     public interface IEquipmentRepository
     {
         Task<IEnumerable<Equipment>> GetAllAsync();
         Task AddAsync(Equipment equipment);
         Task UpdateAsync(Equipment equipment);
-        Task DeleteAsync(Equipment Name);
+        Task DeleteAsync(Guid id);
     }
 }

@@ -12,6 +12,6 @@ namespace Catalog.Domain.Repositories
         Task<IEnumerable<Court>> GetAllAsync();
         Task AddAsync(Court court);
         Task UpdateAsync(Court court);
-        Task DeleteAsync(Court Name);
+        Task DeleteAsync(Guid id);
     }
 }
