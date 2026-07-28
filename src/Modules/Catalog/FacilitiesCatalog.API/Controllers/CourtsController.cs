@@ -32,8 +32,15 @@ namespace FacilitiesCatalog.API.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] CourtDto dto, CancellationToken cancellationToken)
         {
-            await _courtService.UpdateCourtAsync(dto, cancellationToken);
-            return Ok();
+            try
+            {
+                await _courtService.UpdateCourtAsync(dto, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException?.Message ?? ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]

@@ -8,7 +8,7 @@ namespace Catalog.Application.DTOs
 {
     public class CourtDto
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
         public bool IsIndoor { get; set; }
         public decimal PricePerHour { get; set; }

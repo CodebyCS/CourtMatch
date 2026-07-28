@@ -22,6 +22,7 @@ namespace Catalog.Infrastructure.Repositories
         public async Task AddAsync(Equipment equipment)
         {
             await _context.Set<Equipment>().AddAsync(equipment);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Equipment>> GetAllAsync()

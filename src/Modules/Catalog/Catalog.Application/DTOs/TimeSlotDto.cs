@@ -8,7 +8,7 @@ namespace Catalog.Application.DTOs
 {
     public class TimeSlotDto
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
