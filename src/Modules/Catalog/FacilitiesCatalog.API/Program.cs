@@ -1,4 +1,5 @@
-﻿using Catalog.Domain.Repositories;
+﻿using Catalog.Application.Services;
+using Catalog.Domain.Repositories;
 using Catalog.Infrastructure.Data;
 using Catalog.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,10 @@ namespace FacilitiesCatalog.API
             builder.Services.AddScoped<ICourtRepository, CourtRepository>();
             builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
             builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
+
+            builder.Services.AddScoped<ICourtService, CourtService>();
+            builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+            builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
 
             var app = builder.Build();
 
