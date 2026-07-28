@@ -1,6 +1,6 @@
-﻿using Games.Domain.Entities.Enums;
+﻿using Game.Domain.Entities.Enums;
 
-namespace Games.Domain.Entities;
+namespace Game.Domain.Entities;
 public class GameParticipant
 {
     public Guid Id { get; private set; }

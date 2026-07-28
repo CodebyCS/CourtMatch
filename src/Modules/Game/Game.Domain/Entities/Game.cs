@@ -1,5 +1,4 @@
-﻿using Games.Domain.Entities;
-using Games.Domain.Entities.Enums;
+﻿using Game.Domain.Entities.Enums;
 
 namespace Game.Domain.Entities
 {

@@ -1,4 +1,6 @@
-﻿public class PlayerRanking
+﻿namespace Game.Domain.Entities;
+
+public class PlayerRanking
 {
     public Guid UserId { get; private set; }
     public int GamesPlayed { get; private set; }

@@ -1,4 +1,4 @@
-﻿namespace Games.Domain.Entities.Enums;
+﻿namespace Game.Domain.Entities.Enums;
 
 public enum GameStatus
 {

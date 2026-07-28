@@ -1,4 +1,4 @@
-﻿namespace Games.Domain.Entities;
+﻿namespace Game.Domain.Entities;
 
 /// <summary>
 /// Resultado de um set individual dentro de um jogo (com suporte a tie-break).
