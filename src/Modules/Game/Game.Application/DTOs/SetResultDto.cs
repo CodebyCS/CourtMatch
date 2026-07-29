@@ -1,4 +1,4 @@
-namespace Games.Application.DTOs;
+namespace Game.Application.DTOs;
 
 public record SetResultDto(
     int SetNumber,

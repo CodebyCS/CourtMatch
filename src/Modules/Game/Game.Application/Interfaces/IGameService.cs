@@ -1,6 +1,6 @@
-using Games.Application.DTOs;
+using Game.Application.DTOs;
 
-namespace Games.Application.Interfaces;
+namespace Game.Application.Interfaces;
 
 public interface IGameService
 {
