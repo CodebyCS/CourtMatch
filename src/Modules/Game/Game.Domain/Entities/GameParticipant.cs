@@ -1,6 +1,10 @@
 ﻿using Game.Domain.Entities.Enums;
 
 namespace Game.Domain.Entities;
+
+/// <summary>
+/// Representa um jogador convidado/associado a um jogo, numa das duas equipas.
+/// </summary>
 public class GameParticipant
 {
     public Guid Id { get; private set; }
