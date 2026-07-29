@@ -1,7 +1,5 @@
 ﻿using Game.Application.DTOs;
 using Game.Application.Interfaces;
-using Game.Application.DTOs;
-using Game.Application.Interfaces;
 using Game.Domain.Entities;
 using Game.Domain.Repositories;
 
@@ -21,9 +19,9 @@ public class GameService : IGameService
     public async Task<GameDto> CreateGameAsync(CreateGameDto dto, CancellationToken ct = default)
     {
         if (await _gameRepository.ExistsForBookingAsync(dto.BookingId, ct))
-            throw new InvalidGameStateException($"Já existe um jogo associado à reserva '{dto.BookingId}'.");
+            throw new InvalidOperationException($"Já existe um jogo associado à reserva '{dto.BookingId}'.");
 
-        var game = new Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt);
+        var game = new Domain.Entities.Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt);
 
         foreach (var participant in dto.Participants)
             game.InvitePlayer(participant.UserId, participant.TeamNumber);
@@ -42,6 +40,7 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
         game.InvitePlayer(dto.UserId, dto.TeamNumber);
+
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
     }
@@ -50,6 +49,7 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
         game.ConfirmParticipant(userId);
+
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
     }
@@ -58,6 +58,7 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
         game.DeclineParticipant(userId);
+
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
     }
@@ -67,13 +68,18 @@ public class GameService : IGameService
         var game = await GetGameOrThrow(gameId, ct);
 
         var sets = dto.Sets
-            .Select(s => new GameSet(gameId, s.SetNumber, s.TeamOneGames, s.TeamTwoGames, s.TieBreakTeamOne, s.TieBreakTeamTwo))
+            .Select(s => new GameSet(
+                gameId,
+                s.SetNumber,
+                s.TeamOneGames,
+                s.TeamTwoGames,
+                s.TieBreakTeamOne,
+                s.TieBreakTeamTwo))
             .ToList();
 
         game.RegisterResult(sets);
         await _gameRepository.UpdateAsync(game, ct);
 
-        // Atualiza o ranking de cada jogador confirmado com base no resultado do jogo.
         foreach (var participant in game.Participants)
         {
             var (setsWon, setsLost) = game.GetSetBalanceForUser(participant.UserId);
@@ -98,6 +104,7 @@ public class GameService : IGameService
     public async Task<IReadOnlyList<PlayerRankingDto>> GetRankingAsync(int top, CancellationToken ct = default)
     {
         var rankings = await _rankingRepository.GetTopAsync(top, ct);
+
         return rankings
             .OrderByDescending(r => r.RankingPoints)
             .Select(r => new PlayerRankingDto(
@@ -111,11 +118,13 @@ public class GameService : IGameService
             .ToList();
     }
 
-    private async Task<Game> GetGameOrThrow(Guid gameId, CancellationToken ct)
+    private async Task<Domain.Entities.Game> GetGameOrThrow(Guid gameId, CancellationToken ct)
     {
         var game = await _gameRepository.GetByIdAsync(gameId, ct);
+
         if (game is null)
-            throw new GameNotFoundException(gameId);
+            throw new KeyNotFoundException($"Não foi encontrado nenhum jogo com o Id '{gameId}'.");
+
         return game;
     }
 
@@ -126,6 +135,18 @@ public class GameService : IGameService
         game.ScheduledAt,
         game.Status.ToString(),
         game.WinningTeam,
-        game.Participants.Select(p => new GameParticipantDto(p.UserId, p.TeamNumber, p.Status.ToString())).ToList(),
-        game.Sets.Select(s => new SetResultDto(s.SetNumber, s.TeamOneGames, s.TeamTwoGames, s.TieBreakTeamOne, s.TieBreakTeamTwo)).ToList());
+        game.Participants
+            .Select(p => new GameParticipantDto(
+                p.UserId,
+                p.TeamNumber,
+                p.Status.ToString()))
+            .ToList(),
+        game.Sets
+            .Select(s => new SetResultDto(
+                s.SetNumber,
+                s.TeamOneGames,
+                s.TeamTwoGames,
+                s.TieBreakTeamOne,
+                s.TieBreakTeamTwo))
+            .ToList());
 }
