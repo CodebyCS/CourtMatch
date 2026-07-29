@@ -24,6 +24,9 @@
 
   <ItemGroup>
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+	  <ProjectReference Include="..\Game.Application\Game.Application.csproj" />
+	  <ProjectReference Include="..\Game.Domain\Game.Domain.csproj" />
+	  <ProjectReference Include="..\Game.Infrastructure\Game.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
