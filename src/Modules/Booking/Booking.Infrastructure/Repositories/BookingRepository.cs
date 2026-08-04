@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Booking.Domain.Entities;
-using Booking.Domain.Repositories;
+﻿using Booking.Domain.Repositories;
 using Booking.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +37,15 @@ namespace Booking.Infrastructure.Repositories
         {
             _context.Bookings.Remove(booking);
             _context.SaveChanges();
+        }
+        
+        public async Task<int> GetRentedEquipmentCountAsync(Guid equipmentId, DateTime startTime, DateTime endTime)
+        {
+            return await _context.BookingEquipments
+                .Where(be => be.EquipmentId == equipmentId &&
+                             be.Booking.StartTime < endTime &&
+                             be.Booking.StartTime.Add(be.Booking.Duration) > startTime)
+                .SumAsync(be => be.Quantity);
         }
     }
 }

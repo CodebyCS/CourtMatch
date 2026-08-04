@@ -12,5 +12,6 @@ namespace Booking.Domain.Repositories
         Task AddAsync(Entities.Booking booking);
         void Update(Entities.Booking booking);
         void Delete(Entities.Booking booking);
+        Task<int> GetRentedEquipmentCountAsync(Guid equipmentId, DateTime startTime, DateTime endTime);
     }
 }

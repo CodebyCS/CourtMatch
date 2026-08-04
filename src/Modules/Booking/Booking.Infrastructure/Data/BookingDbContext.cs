@@ -10,6 +10,8 @@ namespace Booking.Infrastructure.Data
 
         public DbSet<Domain.Entities.Booking> Bookings { get; set; }
 
+        public DbSet<BookingEquipment> BookingEquipments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -28,6 +30,17 @@ namespace Booking.Infrastructure.Data
                     .IsRequired();
 
                 entity.Property(b => b.Status)
+                    .HasConversion<string>()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<BookingEquipment>(entity =>
+            {
+                entity.HasKey(be => be.Id);
+                entity.Property(be => be.BookingId).IsRequired();
+                entity.Property(be => be.EquipmentId).IsRequired();
+                entity.Property(be => be.Quantity).IsRequired();
+                entity.Property(be => be.TotalPrice)
                     .HasConversion<string>()
                     .IsRequired();
             });
