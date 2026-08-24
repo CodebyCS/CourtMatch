@@ -68,5 +68,36 @@ namespace Booking.API.Controllers
 
             return NoContent();
         }
+
+        // ADD EQUIPMENT
+        [HttpPost("{id:guid}/equipments")]
+        public async Task<IActionResult> AddEquipment(Guid id, [FromBody] AddBookingEquipmentDto dto)
+        {
+            try
+            {
+                var updatedBooking = await _bookingService.AddEquipmentAsync(id, dto);
+                if (updatedBooking == null) return NotFound();
+
+                return Ok(updatedBooking);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // REMOVE EQUIPMENT
+        [HttpDelete("{id:guid}/equipments/{equipmentId:guid}")]
+        public async Task<IActionResult> RemoveEquipment(Guid id, Guid equipmentId)
+        {
+            var updatedBooking = await _bookingService.RemoveEquipmentAsync(id, equipmentId);
+            if (updatedBooking == null) return NotFound();
+
+            return Ok(updatedBooking);
+        }
     }
 }
