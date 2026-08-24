@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Booking.Application.DTOs;
@@ -94,6 +95,49 @@ namespace Booking.Application.Services
             _bookingRepository.Update(booking);
 
             return MapToDto(booking);
+        }
+
+        public async Task<BookingDto> ConfirmBookingAsync(Guid bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            booking.PaymentCompleted();
+
+            _bookingRepository.Update(booking);
+
+            return MapToDto(booking);
+        }
+
+        public async Task<BookingDto> CancelBookingAsync(Guid bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            booking.PaymentCancelled();
+
+            _bookingRepository.Update(booking);
+
+            return MapToDto(booking);
+        }
+
+        public async Task<IEnumerable<BookingDto>> GetBookingsByCourtAsync(Guid courtId)
+        {
+            var bookings = await _bookingRepository.GetByCourtIdAsync(courtId);
+
+            return bookings.Select(MapToDto).ToList();
+        }
+
+        public async Task<IEnumerable<BookingDto>> GetBookingsByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            if (endDate <= startDate)
+            {
+                throw new ArgumentException("End date must be after start date.");
+            }
+
+            var bookings = await _bookingRepository.GetBookingsByDateRangeAsync(startDate, endDate);
+
+            return bookings.Select(MapToDto).ToList();
         }
 
         private static BookingDto MapToDto(Domain.Entities.Booking booking)

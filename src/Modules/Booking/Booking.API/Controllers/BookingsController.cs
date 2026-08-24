@@ -32,6 +32,35 @@ namespace Booking.API.Controllers
             }
         }
 
+        // LIST — por quadra (?courtId=) ou por intervalo (?startDate=&endDate=)
+        [HttpGet]
+        public async Task<IActionResult> GetBookings(
+            [FromQuery] Guid? courtId,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
+        {
+            if (courtId.HasValue)
+            {
+                var byCourt = await _bookingService.GetBookingsByCourtAsync(courtId.Value);
+                return Ok(byCourt);
+            }
+
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                try
+                {
+                    var byRange = await _bookingService.GetBookingsByDateRangeAsync(startDate.Value, endDate.Value);
+                    return Ok(byRange);
+                }
+                catch (ArgumentException ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+            }
+
+            return BadRequest(new { message = "Informe courtId, ou startDate e endDate." });
+        }
+
         // READ
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBookingById(Guid id)
@@ -67,6 +96,41 @@ namespace Booking.API.Controllers
             if (!success) return NotFound();
 
             return NoContent();
+        }
+
+        // CONFIRM
+        [HttpPatch("{id:guid}/confirm")]
+        public async Task<IActionResult> ConfirmBooking(Guid id)
+        {
+            try
+            {
+                var booking = await _bookingService.ConfirmBookingAsync(id);
+                if (booking == null) return NotFound();
+
+                return Ok(booking);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // A reserva não está Pending — transição de estado inválida.
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
+        // CANCEL
+        [HttpPatch("{id:guid}/cancel")]
+        public async Task<IActionResult> CancelBooking(Guid id)
+        {
+            try
+            {
+                var booking = await _bookingService.CancelBookingAsync(id);
+                if (booking == null) return NotFound();
+
+                return Ok(booking);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         // ADD EQUIPMENT

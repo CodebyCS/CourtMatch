@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Booking.Application.DTOs;
 
@@ -12,5 +13,9 @@ namespace Booking.Application.Interfaces
         Task<bool> DeleteBookingAsync(Guid bookingId);
         Task<BookingDto> AddEquipmentAsync(Guid bookingId, AddBookingEquipmentDto addEquipmentDto);
         Task<BookingDto> RemoveEquipmentAsync(Guid bookingId, Guid equipmentId);
+        Task<BookingDto> ConfirmBookingAsync(Guid bookingId);
+        Task<BookingDto> CancelBookingAsync(Guid bookingId);
+        Task<IEnumerable<BookingDto>> GetBookingsByCourtAsync(Guid courtId);
+        Task<IEnumerable<BookingDto>> GetBookingsByDateRangeAsync(DateTime startDate, DateTime endDate);
     }
 }

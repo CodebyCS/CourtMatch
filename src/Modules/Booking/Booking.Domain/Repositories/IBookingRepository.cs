@@ -9,6 +9,7 @@ namespace Booking.Domain.Repositories
     {
         Task<Entities.Booking> GetByIdAsync(Guid id);
         Task<IEnumerable<Entities.Booking>> GetByCourtIdAsync(Guid courtId);
+        Task<IEnumerable<Entities.Booking>> GetBookingsByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task AddAsync(Entities.Booking booking);
         void Update(Entities.Booking booking);
         void Delete(Entities.Booking booking);
