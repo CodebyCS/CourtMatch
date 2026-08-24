@@ -10,6 +10,7 @@ namespace Booking.Application.DTOs
         DateTime EndTime,
         decimal CourtPrice,
         decimal TotalPrice,
-        string Status
+        string Status,
+        List<BookingEquipmentDto> BookingEquipments
     );
-}
+}   
