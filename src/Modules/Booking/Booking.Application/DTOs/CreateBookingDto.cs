@@ -5,7 +5,7 @@
         Guid HostPlayerId,
         DateTime StartTime,
         DateTime EndTime,
-        decimal CourtPrince,
+        decimal CourtPrice,
         decimal TotalPrice
         );
 }

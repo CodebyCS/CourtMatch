@@ -19,15 +19,16 @@ namespace Booking.Application.Services
         public async Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto)
         {
             //validate date
-            if (createBookingDto.Schedule < DateTime.UtcNow)
+            if (createBookingDto.StartTime < DateTime.UtcNow)
             {
-                throw new ArgumentException("Schedule date cannot be in the past.");
+                throw new ArgumentException("Start time cannot be in the past.");
             }
             var booking = new Domain.Entities.Booking(
                 createBookingDto.CourtId,
                 createBookingDto.HostPlayerId,
-                createBookingDto.Schedule,
-                createBookingDto.TotalPrice
+                createBookingDto.StartTime,
+                createBookingDto.EndTime,
+                createBookingDto.CourtPrice
             );
 
             await _bookingRepository.AddAsync(booking);
@@ -44,7 +45,9 @@ namespace Booking.Application.Services
                 booking.Id,
                 booking.CourtId,
                 booking.HostPlayerId,
-                booking.Schedule,
+                booking.StartTime,
+                booking.EndTime,
+                booking.CourtPrice,
                 booking.TotalPrice,
                 booking.Status.ToString()
             );
@@ -57,13 +60,13 @@ namespace Booking.Application.Services
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null) return null;
 
-            if (updateBookingDto.Schedule < DateTime.UtcNow)
+            if (updateBookingDto.StartTime < DateTime.UtcNow)
             {
-                throw new ArgumentException("Schedule date cannot be in the past.");
+                throw new ArgumentException("Start time cannot be in the past.");
             }
 
             // Atualiza os dados da Entidade
-            booking.UpdateDetails(updateBookingDto.Schedule, updateBookingDto.TotalPrice);
+            booking.UpdateSchedule(updateBookingDto.StartTime, updateBookingDto.EndTime);
 
             _bookingRepository.Update(booking);
 
@@ -71,7 +74,9 @@ namespace Booking.Application.Services
                 booking.Id,
                 booking.CourtId,
                 booking.HostPlayerId,
-                booking.Schedule,
+                booking.StartTime,
+                booking.EndTime,
+                booking.CourtPrice,
                 booking.TotalPrice,
                 booking.Status.ToString()
             );
