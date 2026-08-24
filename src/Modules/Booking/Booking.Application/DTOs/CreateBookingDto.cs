@@ -3,7 +3,9 @@
     public record CreateBookingDto(
         Guid CourtId,
         Guid HostPlayerId,
-        DateTime Schedule,
+        DateTime StartTime,
+        DateTime EndTime,
+        decimal CourtPrince,
         decimal TotalPrice
         );
 }

@@ -3,7 +3,8 @@
 namespace Booking.Application.DTOs
 {
     public record UpdateBookingDto(
-        DateTime Schedule,
-        decimal TotalPrice
+        DateTime StartTime,
+        DateTime EndTime,
+        decimal CourtPrice
     );
 }

@@ -6,7 +6,9 @@ namespace Booking.Application.DTOs
         Guid Id,
         Guid CourtId,
         Guid HostPlayerId,
-        DateTime Schedule,
+        DateTime StarTime,
+        DateTime EndTime,
+        decimal CourtPrice,
         decimal TotalPrice,
         string Status
     );
