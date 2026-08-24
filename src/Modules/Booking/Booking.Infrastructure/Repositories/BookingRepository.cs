@@ -1,4 +1,5 @@
-﻿using Booking.Domain.Repositories;
+﻿using System.Linq;
+using Booking.Domain.Repositories;
 using Booking.Domain.Entities;
 using Booking.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,31 @@ namespace Booking.Infrastructure.Repositories
 
         public void Update(Domain.Entities.Booking booking)
         {
-            _context.Bookings.Update(booking);
+            // ChangeTracker.Entries() triggers DetectChanges(), which would auto-attach
+            // new BookingEquipment items as Modified (their Id is already a real Guid,
+            // not the CLR default, so EF assumes they pre-exist). Disabling auto-detect
+            // here lets us see only the entities that are genuinely already tracked
+            // (loaded from the DB), so we can Add() the new ones explicitly as Added.
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            try
+            {
+                var trackedEquipmentIds = _context.ChangeTracker.Entries<BookingEquipment>()
+                    .Select(e => e.Entity.Id)
+                    .ToHashSet();
+
+                foreach (var equipment in booking.Equipments)
+                {
+                    if (!trackedEquipmentIds.Contains(equipment.Id))
+                    {
+                        _context.BookingEquipments.Add(equipment);
+                    }
+                }
+            }
+            finally
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = true;
+            }
+
             _context.SaveChanges();
         }
 
