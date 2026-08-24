@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Booking.Application.DTOs
 {
@@ -6,7 +7,7 @@ namespace Booking.Application.DTOs
         Guid Id,
         Guid CourtId,
         Guid HostPlayerId,
-        DateTime StarTime,
+        DateTime StartTime,
         DateTime EndTime,
         decimal CourtPrice,
         decimal TotalPrice,

@@ -10,5 +10,7 @@ namespace Booking.Application.Interfaces
         Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
         Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
         Task<bool> DeleteBookingAsync(Guid bookingId);
+        Task<BookingDto> AddEquipmentAsync(Guid bookingId, AddBookingEquipmentDto addEquipmentDto);
+        Task<BookingDto> RemoveEquipmentAsync(Guid bookingId, Guid equipmentId);
     }
 }

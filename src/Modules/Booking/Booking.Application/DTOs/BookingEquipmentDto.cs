@@ -1,8 +1,12 @@
-﻿namespace Booking.Application.DTOs
+using System;
+
+namespace Booking.Application.DTOs
 {
-    public record AddBookingEquipmentDto(
-        int Quantity,
+    public record BookingEquipmentDto(
+        Guid Id,
         Guid EquipmentId,
-        decimal UnitPrice
+        int Quantity,
+        decimal UnitPrice,
+        decimal TotalPrice
     );
 }

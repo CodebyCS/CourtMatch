@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using Booking.Application.DTOs;  
+using Booking.Application.DTOs;
 using Booking.Application.Interfaces;
 using Booking.Domain.Entities;
 using Booking.Domain.Repositories;
@@ -41,18 +42,7 @@ namespace Booking.Application.Services
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null) return null;
 
-            return new BookingDto(
-                booking.Id,
-                booking.CourtId,
-                booking.HostPlayerId,
-                booking.StartTime,
-                booking.EndTime,
-                booking.CourtPrice,
-                booking.TotalPrice,
-                booking.Status.ToString()
-            );
-
-
+            return MapToDto(booking);
         }
 
         public async Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto)
@@ -70,16 +60,7 @@ namespace Booking.Application.Services
 
             _bookingRepository.Update(booking);
 
-            return new BookingDto(
-                booking.Id,
-                booking.CourtId,
-                booking.HostPlayerId,
-                booking.StartTime,
-                booking.EndTime,
-                booking.CourtPrice,
-                booking.TotalPrice,
-                booking.Status.ToString()
-            );
+            return MapToDto(booking);
         }
 
         public async Task<bool>DeleteBookingAsync(Guid bookingId)
@@ -89,6 +70,49 @@ namespace Booking.Application.Services
 
             _bookingRepository.Delete(booking);
             return true;
+        }
+
+        public async Task<BookingDto> AddEquipmentAsync(Guid bookingId, AddBookingEquipmentDto addEquipmentDto)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            booking.AddEquipment(addEquipmentDto.EquipmentId, addEquipmentDto.Quantity, addEquipmentDto.UnitPrice);
+
+            _bookingRepository.Update(booking);
+
+            return MapToDto(booking);
+        }
+
+        public async Task<BookingDto> RemoveEquipmentAsync(Guid bookingId, Guid equipmentId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null) return null;
+
+            booking.RemoveEquipment(equipmentId);
+
+            _bookingRepository.Update(booking);
+
+            return MapToDto(booking);
+        }
+
+        private static BookingDto MapToDto(Domain.Entities.Booking booking)
+        {
+            var equipments = booking.Equipments
+                .Select(e => new BookingEquipmentDto(e.Id, e.EquipmentId, e.Quantity, e.UnitPrice, e.TotalPrice))
+                .ToList();
+
+            return new BookingDto(
+                booking.Id,
+                booking.CourtId,
+                booking.HostPlayerId,
+                booking.StartTime,
+                booking.EndTime,
+                booking.CourtPrice,
+                booking.TotalPrice,
+                booking.Status.ToString(),
+                equipments
+            );
         }
     }
 }
