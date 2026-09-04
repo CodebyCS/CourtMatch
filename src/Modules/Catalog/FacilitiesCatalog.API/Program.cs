@@ -19,6 +19,12 @@ namespace FacilitiesCatalog.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCors", policy =>
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+
             builder.Services.AddDbContext<CatalogDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -39,6 +45,7 @@ namespace FacilitiesCatalog.API
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("DefaultCors");
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>CourtMatch - Test Console</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e6e8eb;
+    --muted: #8a90a0;
+    --accent: #4f8cff;
+    --get: #3fb950;
+    --post: #4f8cff;
+    --put: #d29922;
+    --patch: #a371f7;
+    --delete: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+  }
+  #sidebar {
+    width: 320px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px;
+    flex-shrink: 0;
+  }
+  #sidebar h1 {
+    font-size: 16px;
+    margin: 0 0 4px;
+  }
+  #sidebar .subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+  .module {
+    margin-bottom: 18px;
+  }
+  .module-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .module-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+    margin-left: 6px;
+  }
+  .module-title .dot.up { background: var(--get); }
+  .module-title .dot.down { background: var(--delete); }
+  .endpoint-btn {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .endpoint-btn:hover { background: var(--panel); }
+  .endpoint-btn.active { background: var(--panel); outline: 1px solid var(--border); }
+  .method-tag {
+    font-size: 10px;
+    font-weight: 700;
+    width: 46px;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 2px 0;
+    border-radius: 4px;
+    color: #0f1115;
+  }
+  .method-tag.GET { background: var(--get); }
+  .method-tag.POST { background: var(--post); }
+  .method-tag.PUT { background: var(--put); }
+  .method-tag.PATCH { background: var(--patch); }
+  .method-tag.DELETE { background: var(--delete); }
+  .path { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 28px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  #request-line {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  #method-select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  #url-input {
+    flex: 1;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 13px;
+  }
+  #send-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  #send-btn:hover { opacity: 0.9; }
+  #send-btn:disabled { opacity: 0.5; cursor: default; }
+  #desc {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+  .col-row {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+  }
+  .col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .col-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+  textarea, pre {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 12.5px;
+    padding: 12px;
+    resize: none;
+    white-space: pre-wrap;
+    overflow: auto;
+    margin: 0;
+  }
+  #status-line {
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: var(--muted);
+  }
+  #status-line.ok { color: var(--get); }
+  #status-line.err { color: var(--delete); }
+  .token-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .token-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 12px;
+    outline: none;
+  }
+  .token-bar span { color: var(--muted); }
+  .token-bar button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>CourtMatch</h1>
+  <div class="subtitle">Console de teste local</div>
+  <div id="modules"></div>
+</div>
+
+<div id="main">
+  <div class="token-bar">
+    <span>Bearer token</span>
+    <input id="token-input" placeholder="cole aqui o token do /api/auth/login e ele vai junto em toda requisição">
+    <button id="clear-token">limpar</button>
+  </div>
+
+  <div id="request-line">
+    <select id="method-select">
+      <option>GET</option>
+      <option>POST</option>
+      <option>PUT</option>
+      <option>PATCH</option>
+      <option>DELETE</option>
+    </select>
+    <input id="url-input" placeholder="http://localhost:5058/api/bookings" />
+    <button id="send-btn">Enviar</button>
+  </div>
+  <div id="desc"></div>
+
+  <div class="col-row">
+    <div class="col">
+      <div class="col-label">Body (JSON)</div>
+      <textarea id="body-input" spellcheck="false"></textarea>
+    </div>
+    <div class="col">
+      <div class="col-label">Resposta <span id="status-line"></span></div>
+      <pre id="response-output">// a resposta aparece aqui</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+const APIS = {
+  Booking:  "http://localhost:5058",
+  Catalog:  "http://localhost:5103",
+  Game:     "http://localhost:5021",
+  Identity: "http://localhost:5257",
+};
+
+const ENDPOINTS = {
+  Booking: [
+    { m: "POST", p: "/api/bookings", d: "Cria uma reserva", body: {
+        courtId: "00000000-0000-0000-0000-000000000000",
+        hostPlayerId: "00000000-0000-0000-0000-000000000000",
+        startTime: "2026-09-10T18:00:00",
+        endTime: "2026-09-10T19:00:00",
+        courtPrice: 80.0,
+        totalPrice: 80.0
+      } },
+    { m: "GET", p: "/api/bookings?courtId=00000000-0000-0000-0000-000000000000", d: "Lista reservas por quadra" },
+    { m: "GET", p: "/api/bookings?startDate=2026-09-01T00:00:00&endDate=2026-09-30T23:59:59", d: "Lista reservas por período" },
+    { m: "GET", p: "/api/bookings/{id}", d: "Busca reserva por id" },
+    { m: "PUT", p: "/api/bookings/{id}", d: "Atualiza reserva", body: {
+        startTime: "2026-09-10T18:00:00",
+        endTime: "2026-09-10T20:00:00",
+        courtPrice: 90.0
+      } },
+    { m: "DELETE", p: "/api/bookings/{id}", d: "Remove reserva" },
+    { m: "PATCH", p: "/api/bookings/{id}/confirm", d: "Confirma reserva (Pending -> Confirmed)" },
+    { m: "PATCH", p: "/api/bookings/{id}/cancel", d: "Cancela reserva" },
+    { m: "POST", p: "/api/bookings/{id}/equipments", d: "Adiciona equipamento à reserva", body: {
+        equipmentId: "00000000-0000-0000-0000-000000000000",
+        quantity: 1,
+        unitPrice: 15.0
+      } },
+    { m: "DELETE", p: "/api/bookings/{id}/equipments/{equipmentId}", d: "Remove equipamento da reserva" },
+  ],
+  Catalog: [
+    { m: "GET", p: "/api/courts", d: "Lista quadras" },
+    { m: "POST", p: "/api/courts", d: "Cria quadra", body: {
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "Quadra 1",
+        isIndoor: false,
+        pricePerHour: 80.0,
+        status: "Available"
+      } },
+    { m: "PUT", p: "/api/courts", d: "Atualiza quadra (id no body)", body: {
+        id: "PREENCHA-O-ID-AQUI",
+        name: "Quadra 1 - Reformada",
+        isIndoor: true,
+        pricePerHour: 100.0,
+        status: "Available"
+      } },
+    { m: "DELETE", p: "/api/courts/{id}", d: "Remove quadra" },
+
+    { m: "GET", p: "/api/equipments", d: "Lista equipamentos" },
+    { m: "POST", p: "/api/equipments", d: "Cria equipamento", body: {
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "Raquete",
+        category: "Padel",
+        stock: 10,
+        rentalPrice: 15.0
+      } },
+    { m: "PUT", p: "/api/equipments", d: "Atualiza equipamento (id no body)", body: {
+        id: "PREENCHA-O-ID-AQUI",
+        name: "Raquete Pro",
+        category: "Padel",
+        stock: 8,
+        rentalPrice: 20.0
+      } },
+    { m: "DELETE", p: "/api/equipments/{id}", d: "Remove equipamento" },
+
+    { m: "GET", p: "/api/timeslots", d: "Lista horários" },
+    { m: "POST", p: "/api/timeslots", d: "Cria horário", body: {
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "Manhã",
+        startTime: "08:00:00",
+        endTime: "09:00:00"
+      } },
+    { m: "PUT", p: "/api/timeslots", d: "Atualiza horário (id no body)", body: {
+        id: "PREENCHA-O-ID-AQUI",
+        name: "Manhã",
+        startTime: "08:00:00",
+        endTime: "09:30:00"
+      } },
+    { m: "DELETE", p: "/api/timeslots/{id}", d: "Remove horário" },
+  ],
+  Game: [
+    { m: "POST", p: "/api/games", d: "Cria jogo associado a uma reserva", body: {
+        bookingId: "00000000-0000-0000-0000-000000000000",
+        facilityId: "00000000-0000-0000-0000-000000000000",
+        scheduledAt: "2026-09-10T18:00:00",
+        participants: [
+          { userId: "00000000-0000-0000-0000-000000000000", teamNumber: 1 }
+        ]
+      } },
+    { m: "GET", p: "/api/games/{gameId}", d: "Busca jogo por id" },
+    { m: "POST", p: "/api/games/{gameId}/invite", d: "Convida jogador", body: {
+        userId: "00000000-0000-0000-0000-000000000000",
+        teamNumber: 2
+      } },
+    { m: "POST", p: "/api/games/{gameId}/players/{userId}/confirm", d: "Jogador confirma participação" },
+    { m: "POST", p: "/api/games/{gameId}/players/{userId}/decline", d: "Jogador recusa convite" },
+    { m: "POST", p: "/api/games/{gameId}/result", d: "Registra resultado do jogo", body: {
+        sets: [
+          { setNumber: 1, teamOneGames: 6, teamTwoGames: 4 },
+          { setNumber: 2, teamOneGames: 6, teamTwoGames: 3 }
+        ]
+      } },
+    { m: "GET", p: "/api/games/history/{userId}", d: "Histórico de jogos de um jogador" },
+    { m: "GET", p: "/api/ranking?top=20", d: "Ranking de jogadores" },
+  ],
+  Identity: [
+    { m: "POST", p: "/api/auth/register", d: "Cria usuário", body: {
+        email: "teste@courtmatch.com",
+        password: "Teste123"
+      } },
+    { m: "POST", p: "/api/auth/login", d: "Login (retorna o token JWT — cole em 'Bearer token' acima)", body: {
+        email: "teste@courtmatch.com",
+        password: "Teste123"
+      } },
+  ],
+};
+
+const modulesEl = document.getElementById('modules');
+const methodSelect = document.getElementById('method-select');
+const urlInput = document.getElementById('url-input');
+const bodyInput = document.getElementById('body-input');
+const descEl = document.getElementById('desc');
+const statusLine = document.getElementById('status-line');
+const responseOutput = document.getElementById('response-output');
+const tokenInput = document.getElementById('token-input');
+
+document.getElementById('clear-token').onclick = () => { tokenInput.value = ''; };
+
+function buildSidebar() {
+  Object.entries(ENDPOINTS).forEach(([mod, list]) => {
+    const box = document.createElement('div');
+    box.className = 'module';
+
+    const title = document.createElement('div');
+    title.className = 'module-title';
+    title.innerHTML = `<span>${mod} <span class="dot" data-mod="${mod}"></span></span><span style="font-weight:400">${APIS[mod].replace('http://localhost:','')}</span>`;
+    box.appendChild(title);
+
+    list.forEach(ep => {
+      const btn = document.createElement('button');
+      btn.className = 'endpoint-btn';
+      btn.innerHTML = `<span class="method-tag ${ep.m}">${ep.m}</span><span class="path">${ep.p}</span>`;
+      btn.onclick = () => selectEndpoint(mod, ep, btn);
+      box.appendChild(btn);
+    });
+
+    modulesEl.appendChild(box);
+  });
+}
+
+function selectEndpoint(mod, ep, btn) {
+  document.querySelectorAll('.endpoint-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  methodSelect.value = ep.m;
+  urlInput.value = APIS[mod] + ep.p;
+  descEl.textContent = ep.d || '';
+  bodyInput.value = ep.body ? JSON.stringify(ep.body, null, 2) : '';
+  bodyInput.disabled = ep.m === 'GET' || ep.m === 'DELETE' && !ep.body;
+  statusLine.textContent = '';
+  statusLine.className = '';
+  responseOutput.textContent = '// a resposta aparece aqui';
+}
+
+async function checkHealth() {
+  for (const [mod, base] of Object.entries(APIS)) {
+    const dot = document.querySelector(`.dot[data-mod="${mod}"]`);
+    try {
+      const res = await fetch(base + '/swagger/index.html', { method: 'GET', mode: 'cors' });
+      dot.classList.add(res.ok ? 'up' : 'down');
+    } catch (e) {
+      dot.classList.add('down');
+    }
+  }
+}
+
+document.getElementById('send-btn').onclick = async () => {
+  const method = methodSelect.value;
+  const url = urlInput.value.trim();
+  if (!url) return;
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (tokenInput.value.trim()) {
+    headers['Authorization'] = 'Bearer ' + tokenInput.value.trim();
+  }
+
+  const opts = { method, headers, mode: 'cors' };
+  if (method !== 'GET' && method !== 'DELETE' && bodyInput.value.trim()) {
+    opts.body = bodyInput.value;
+  }
+
+  statusLine.textContent = 'enviando...';
+  statusLine.className = '';
+  responseOutput.textContent = '';
+
+  const start = performance.now();
+  try {
+    const res = await fetch(url, opts);
+    const ms = Math.round(performance.now() - start);
+    let text = await res.text();
+    let pretty = text;
+    try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch (e) {}
+
+    statusLine.textContent = `${res.status} ${res.statusText} — ${ms}ms`;
+    statusLine.className = res.ok ? 'ok' : 'err';
+    responseOutput.textContent = pretty || '(sem corpo na resposta)';
+  } catch (err) {
+    statusLine.textContent = 'falha na requisição';
+    statusLine.className = 'err';
+    responseOutput.textContent = String(err) + '\n\nProvável causa: a API não está rodando, ou bloqueio de CORS.';
+  }
+};
+
+buildSidebar();
+checkHealth();
+</script>
+
+</body>
+</html>

@@ -40,6 +40,12 @@ namespace Identity.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCors", policy =>
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -49,6 +55,7 @@ namespace Identity.API
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("DefaultCors");
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
