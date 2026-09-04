@@ -3,7 +3,7 @@ using Game.Domain.Repositories;
 using Game.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Games.Infrastructure.Repositories;
+namespace Game.Infrastructure.Repositories;
 
 public class PlayerRankingRepository : IPlayerRankingRepository
 {
