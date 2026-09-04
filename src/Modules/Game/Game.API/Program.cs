@@ -18,7 +18,7 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IPlayerRankingRepository, PlayerRankingRepository>();
 builder.Services.AddScoped<IGameService, GameService>();
 
-// --- Tratamento global de exceções (substitui o antigo middleware manual) ---
+// --- Tratamento global de exceções ---
 builder.Services.AddProblemDetails();
 
 // --- Controllers & Swagger ---
