@@ -20,7 +20,7 @@ namespace FacilitiesCatalog.API
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<ICourtRepository, CourtRepository>();
             builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
