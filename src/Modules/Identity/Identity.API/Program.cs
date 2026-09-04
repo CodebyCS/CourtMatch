@@ -11,10 +11,10 @@ namespace Identity.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Config. connecion string.
-            var connectionString = builder.Configuration.GetConnectionString("SupabaseConnection");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             // Config. DbContext.
-            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
             // Services Identity.
             builder.Services.AddDataProtection();

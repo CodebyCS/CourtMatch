@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Base de dados (Supabase = Postgres, via Npgsql) ---
+// --- Base de dados (LocalDB / SQL Server, ambiente local) ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<GameDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlServer(connectionString));
 
 // --- Injeção de dependência ---
 builder.Services.AddScoped<IGameRepository, GameRepository>();
