@@ -6,7 +6,7 @@ namespace Identity.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -63,7 +63,26 @@ namespace Identity.API
 
             app.MapControllers();
 
-            app.Run();
+            // Bootstrap: garante que a role Admin existe e promove um admin inicial
+            // (ambiente de teste local — sem isso ninguém conseguiria acessar a Gestão).
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+                if (!await roleManager.RoleExistsAsync("Admin"))
+                    await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+                var anyAdmin = await userManager.GetUsersInRoleAsync("Admin");
+                if (anyAdmin.Count == 0)
+                {
+                    var bootstrapAdmin = await userManager.FindByEmailAsync("joao@courtmatch.com");
+                    if (bootstrapAdmin != null)
+                        await userManager.AddToRoleAsync(bootstrapAdmin, "Admin");
+                }
+            }
+
+            await app.RunAsync();
         }
     }
 }

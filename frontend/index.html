@@ -373,6 +373,7 @@ const S = {
   userId: store.get('cm_userId') || null,
   email: store.get('cm_email') || null,
   fullName: store.get('cm_fullName') || '',
+  isAdmin: store.get('cm_isAdmin') === '1',
   view: null,
   authMode: 'login',
   courts: [], equipments: [], timeslots: [], allBookings: [],
@@ -411,6 +412,7 @@ function icon(name){
     bell: '<path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 004 0"/>',
     receipt: '<path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
     chevron: '<path d="M9 18l6-6-6-6"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
   };
   return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths[name]||''}</svg>`;
 }
@@ -464,21 +466,27 @@ async function api(base, path, { method='GET', body, auth=true } = {}){
   return data;
 }
 
-function fmtMoney(v){ return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+function fmtMoney(v){ return Number(v).toFixed(2).replace('.', ',') + ' €'; }
 function fmtHour(h){ const hh=Math.floor(h), mm=Math.round((h-hh)*60); return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
 function fmtDur(h){ return h===Math.floor(h) ? h+'h' : (h-0.5)+'h30'; }
 function fmtDate(iso){
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }) + ' · ' +
-    d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  return d.toLocaleDateString('pt-PT', { day:'2-digit', month:'short' }) + ' · ' +
+    d.toLocaleTimeString('pt-PT', { hour:'2-digit', minute:'2-digit' });
 }
 
 function go(view){ S.view = view; render(); }
 
 function logout(){
-  S.token = null; S.userId = null; S.email = null; S.fullName = '';
-  store.remove('cm_token'); store.remove('cm_userId'); store.remove('cm_email'); store.remove('cm_fullName');
+  S.token = null; S.userId = null; S.email = null; S.fullName = ''; S.isAdmin = false;
+  store.remove('cm_token'); store.remove('cm_userId'); store.remove('cm_email'); store.remove('cm_fullName'); store.remove('cm_isAdmin');
   go('auth');
+}
+
+function hasAdminRole(claims){
+  const role = claims && claims.role;
+  if (!role) return false;
+  return Array.isArray(role) ? role.includes('Admin') : role === 'Admin';
 }
 
 function displayName(){ return S.fullName || S.email || '?'; }
@@ -495,7 +503,7 @@ async function resolveUserNames(ids){
 }
 
 function nameFor(userId){
-  if (userId === S.userId) return 'Você';
+  if (userId === S.userId) return 'Eu';
   return S.userNames[userId] || userId;
 }
 
@@ -514,7 +522,7 @@ function screenAuth(){
     <div style="display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 44px);">
       <div style="text-align:center;margin-bottom:44px;">
         <div style="display:flex;justify-content:center;margin-bottom:14px;">${logoBlock()}</div>
-        <p style="color:var(--text-dim);font-size:13px;margin:0;">Reserve quadras. Monte o jogo. Suba no ranking.</p>
+        <p style="color:var(--text-dim);font-size:13px;margin:0;">Reserva campos. Monta o jogo. Sobe no ranking.</p>
       </div>
 
       <div class="tabs">
@@ -551,10 +559,12 @@ async function submitAuth(){
     S.userId = claims.nameid || claims.sub;
     S.email = email;
     S.fullName = claims.name || '';
+    S.isAdmin = hasAdminRole(claims);
     store.set('cm_token', S.token);
     store.set('cm_userId', S.userId);
     store.set('cm_email', S.email);
     store.set('cm_fullName', S.fullName);
+    store.set('cm_isAdmin', S.isAdmin ? '1' : '0');
     await loadCatalog();
     go('home');
   } catch(e){ /* toast already shown */ }
@@ -619,7 +629,7 @@ function screenHome(){
           <button class="btn btn-primary btn-sm" ${available?'':'disabled'} onclick="openCourt('${c.id}')">${available?'Reservar':'Indisponível'}</button>
         </div>
       </div>`;
-  }).join('') : emptyState('calendar', 'Nenhuma quadra cadastrada ainda.');
+  }).join('') : emptyState('calendar', 'Nenhum campo registado ainda.');
 
   const diagrams = S.courts.length ? `<div class="diagrams-row">${S.courts.map(c => {
     const available = freeHoursFor(c.id, S.date, S.selDuration).length > 0;
@@ -634,7 +644,7 @@ function screenHome(){
       ${logoBlock()}
       <button class="avatar" style="border:none;cursor:pointer;" onclick="navTo('profile')">${displayName()[0].toUpperCase()}</button>
     </div>
-    <div class="eyebrow">CourtMatch · ${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+    <div class="eyebrow">CourtMatch · ${dateObj.toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}</div>
     <h2 style="font-size:26px;margin:0 0 22px;">Pesquisar campo</h2>
 
     <div class="split">
@@ -656,7 +666,7 @@ function screenHome(){
           <div class="section-label">Seleção</div>
           <div class="price-tag" style="text-align:left;font-size:24px;">${fmtHour(S.selHour)}</div>
           <div class="price-tag" style="text-align:left;font-size:24px;">${fmtDur(S.selDuration)}</div>
-          <div class="meta" style="margin-top:6px;">${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+          <div class="meta" style="margin-top:6px;">${dateObj.toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}</div>
         </div>
       </div>
 
@@ -699,14 +709,14 @@ function screenCourt(){
       <div class="equip-row">
         <div>
           <div class="name">${e.name}</div>
-          <div class="sub">${fmtMoney(e.rentalPrice)} · estoque ${e.stock}</div>
+          <div class="sub">${fmtMoney(e.rentalPrice)} · stock ${e.stock}</div>
         </div>
         <div class="stepper">
           <button onclick="stepEquip('${e.id}',-1)">−</button>
           <span class="qty">${S.equipQty[e.id]||0}</span>
           <button onclick="stepEquip('${e.id}',1)">+</button>
         </div>
-      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento cadastrado.</p>`;
+      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento registado.</p>`;
 
   return `
     ${backLink('home','Voltar')}
@@ -720,7 +730,7 @@ function screenCourt(){
     </div>
 
     <div class="section">
-      <div class="summary-row"><span>Quadra (${fmtDur(S.selDuration)} × ${fmtMoney(c.pricePerHour)})</span><span>${fmtMoney(courtPrice)}</span></div>
+      <div class="summary-row"><span>Campo (${fmtDur(S.selDuration)} × ${fmtMoney(c.pricePerHour)})</span><span>${fmtMoney(courtPrice)}</span></div>
       <div class="summary-row"><span>Equipamentos</span><span>${fmtMoney(equipTotal())}</span></div>
       <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
     </div>
@@ -753,7 +763,7 @@ function screenPayment(){
         <div class="section" style="border-top:none;padding-top:0;">
           <div class="summary-row"><span>Campo</span><span>${c.name}</span></div>
           <div class="summary-row"><span>Tipo</span><span>${c.isIndoor?'Interior · Climatizado':'Exterior · Descoberto'}</span></div>
-          <div class="summary-row"><span>Data</span><span>${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</span></div>
+          <div class="summary-row"><span>Data</span><span>${dateObj.toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}</span></div>
           <div class="summary-row"><span>Horário</span><span>${fmtHour(S.selHour)} – ${fmtDur(S.selDuration)}</span></div>
           <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
         </div>
@@ -803,12 +813,12 @@ function screenMyBookings(){
     return `
       <div class="row-item" onclick="openBookingDetail('${b.id}')">
         <div>
-          <h3>${court ? court.name : 'Quadra'}</h3>
+          <h3>${court ? court.name : 'Campo'}</h3>
           <div class="meta">${fmtDate(b.startTime)}</div>
         </div>
         <span class="status-pill status-${b.status}">${b.status}</span>
       </div>`;
-  }).join('') : emptyState('calendar', 'Você ainda não tem reservas.');
+  }).join('') : emptyState('calendar', 'Ainda não tens reservas.');
 
   return `
     <div class="eyebrow">Programação</div>
@@ -863,7 +873,7 @@ function screenBookingDetail(){
   return `
     ${backLink('mybookings','Voltar')}
     <div class="header-row">
-      <div class="eyebrow" style="margin:0;flex:1;">Reserva ativa · ${new Date(b.startTime).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+      <div class="eyebrow" style="margin:0;flex:1;">Reserva ativa · ${new Date(b.startTime).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}</div>
       <span class="status-pill status-${b.status}">${b.status}</span>
     </div>
     <h2 style="font-size:26px;margin:0 0 22px;">Gestão da reserva</h2>
@@ -876,7 +886,7 @@ function screenBookingDetail(){
 
         <div class="summary-row"><span>Data</span><span>${fmtDate(b.startTime)}</span></div>
         <div class="summary-row"><span>Até</span><span>${fmtDate(b.endTime)}</span></div>
-        <div class="summary-row"><span>Preço da quadra</span><span>${fmtMoney(b.courtPrice)}</span></div>
+        <div class="summary-row"><span>Preço do campo</span><span>${fmtMoney(b.courtPrice)}</span></div>
         ${equipRows}
         <div class="summary-row total"><span>Total pago</span><span>${fmtMoney(b.totalPrice)}</span></div>
 
@@ -949,14 +959,14 @@ function screenAddEquipment(){
       <div class="equip-row">
         <div>
           <div class="name">${e.name}</div>
-          <div class="sub">${fmtMoney(e.rentalPrice)} · estoque ${e.stock}</div>
+          <div class="sub">${fmtMoney(e.rentalPrice)} · stock ${e.stock}</div>
         </div>
         <div class="stepper">
           <button onclick="stepAddEquip('${e.id}',-1)">−</button>
           <span class="qty">${S.addEquipQty[e.id]||0}</span>
           <button onclick="stepAddEquip('${e.id}',1)">+</button>
         </div>
-      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento cadastrado.</p>`;
+      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento registado.</p>`;
 
   return `
     ${backLink('booking','Voltar')}
@@ -1024,7 +1034,7 @@ function screenNewGame(){
         <div class="info"><div class="n">${u.fullName || u.email}</div><div class="t">Membro CourtMatch</div></div>
         <button class="btn btn-ghost btn-sm" ${already||full?'disabled':''} onclick="addStagedPlayer('${u.id}','${(u.fullName||u.email).replace(/'/g,"")}')">${already?'Adicionado':'+ Convidar'}</button>
       </div>`;
-  }).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>`;
+  }).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11px;">Pesquisa pelo nome ou e-mail do jogador.</p>`;
 
   return `
     ${backLink('booking','Voltar')}
@@ -1053,7 +1063,7 @@ function screenNewGame(){
 
       <div class="col-b">
         <div class="section-label">Convidar jogadores</div>
-        <div class="field"><input type="text" placeholder="Buscar por nome ou e-mail..." oninput="onNewGameSearch(this.value)"></div>
+        <div class="field"><input type="text" placeholder="Pesquisar por nome ou e-mail..." oninput="onNewGameSearch(this.value)"></div>
         <div id="ng-results">${resultsHtml}</div>
       </div>
     </div>
@@ -1077,7 +1087,7 @@ function onNewGameSearch(term){
 }
 async function doNewGameSearch(term){
   term = (term||'').trim();
-  if (!term){ S.newGame.searchResults = []; document.getElementById('ng-results').innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>'; return; }
+  if (!term){ S.newGame.searchResults = []; document.getElementById('ng-results').innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Pesquisa pelo nome ou e-mail do jogador.</p>'; return; }
   try{
     const res = await fetch(API.identity + '/api/auth/users?search=' + encodeURIComponent(term) + '&limit=15');
     const users = res.ok ? await res.json() : [];
@@ -1155,10 +1165,10 @@ function screenGame(){
           <div class="section" style="border-top:none;padding-top:0;">
             <div class="section-label">Convidar jogador</div>
             <div class="field" style="margin-bottom:10px;">
-              <label>Buscar por nome ou e-mail</label>
-              <input type="text" placeholder="Digite para buscar..." oninput="onInviteSearchInput(this.value)">
+              <label>Pesquisar por nome ou e-mail</label>
+              <input type="text" placeholder="Escreve para pesquisar..." oninput="onInviteSearchInput(this.value)">
             </div>
-            <div id="invite-results"><p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p></div>
+            <div id="invite-results"><p class="mono" style="color:var(--text-dim);font-size:11px;">Pesquisa pelo nome ou e-mail do jogador.</p></div>
             <div class="chips" style="margin:12px 0 14px;">
               <div class="chip ${S.inviteTeam===1?'selected':''}" onclick="S.inviteTeam=1;render()">Equipa A</div>
               <div class="chip ${S.inviteTeam===2?'selected':''}" onclick="S.inviteTeam=2;render()">Equipa B</div>
@@ -1168,7 +1178,7 @@ function screenGame(){
 
         ${g.status !== 'Cancelled' ? `
           <div class="section">
-            <div class="section-label">${g.sets && g.sets.length ? 'Editar resultado' : 'Registrar resultado'}</div>
+            <div class="section-label">${g.sets && g.sets.length ? 'Editar resultado' : 'Registar resultado'}</div>
             ${S.sets.map((s,i) => `
               <div class="set-row">
                 <span style="width:40px;">Set ${s.setNumber}</span>
@@ -1179,7 +1189,7 @@ function screenGame(){
             `).join('')}
             <div style="display:flex;gap:8px;margin-top:8px;">
               <button class="btn btn-ghost btn-sm" onclick="addSet()">+ Set</button>
-              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="registerResult()">Salvar resultado</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="registerResult()">Guardar resultado</button>
             </div>
           </div>
         ` : ''}
@@ -1198,8 +1208,8 @@ async function doInviteSearch(term){
   const el = document.getElementById('invite-results');
   if (!el) return;
   term = (term || '').trim();
-  if (!term){ el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>'; return; }
-  el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Buscando...</p>';
+  if (!term){ el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Pesquisa pelo nome ou e-mail do jogador.</p>'; return; }
+  el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">A pesquisar...</p>';
   try{
     const res = await fetch(API.identity + '/api/auth/users?search=' + encodeURIComponent(term) + '&limit=15');
     const users = res.ok ? await res.json() : [];
@@ -1213,7 +1223,7 @@ async function doInviteSearch(term){
           </div>`).join('')
       : '<p class="mono" style="color:var(--text-dim);font-size:11px;">Nenhum jogador encontrado.</p>';
   } catch(e){
-    el.innerHTML = '<p class="mono" style="color:var(--clay);font-size:11px;">Erro ao buscar.</p>';
+    el.innerHTML = '<p class="mono" style="color:var(--clay);font-size:11px;">Erro ao pesquisar.</p>';
   }
 }
 
@@ -1252,7 +1262,7 @@ async function registerResult(){
     S.game = await api(API.game, `/api/games/${S.game.id}/result`, { method:'POST', body:{ sets: S.sets } });
     syncBookingGame();
     S.sets = S.game.sets.map(s => ({ setNumber:s.setNumber, teamOneGames:s.teamOneGames, teamTwoGames:s.teamTwoGames }));
-    toast('Resultado salvo!', 'ok');
+    toast('Resultado guardado!', 'ok');
     render();
   } catch(e){}
 }
@@ -1323,7 +1333,7 @@ function screenProfile(){
       <div class="row-item" style="cursor:default;" onclick="event.stopPropagation()">
         <div>
           <h3>${g.name || court?.name || 'Jogo'}</h3>
-          <div class="meta">${new Date(g.scheduledAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})}</div>
+          <div class="meta">${new Date(g.scheduledAt).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'})}</div>
         </div>
         <div style="text-align:right;">
           ${isCompleted ? `<div class="price-tag" style="color:${won?'var(--gold)':'var(--clay)'}">${sw} – ${sl}</div>` : ''}
@@ -1397,21 +1407,240 @@ function screenProfile(){
   `;
 }
 
+// ---------- ADMIN (Gestão) ----------
+S.adminTab = 'courts';
+
+async function loadAdmin(){
+  await loadCatalog();
+  await resolveUserNames(S.allBookings.map(b => b.hostPlayerId));
+}
+
+function screenAdmin(){
+  const tabs = [
+    { k:'courts', l:'Campos' },
+    { k:'equipments', l:'Equipamento' },
+    { k:'timeslots', l:'Horários' },
+    { k:'bookings', l:'Reservas' },
+  ];
+
+  return `
+    <div class="eyebrow">Clube · Administração</div>
+    <h2 style="font-size:24px;margin:0 0 22px;">Gestão</h2>
+
+    <div class="tabs">
+      ${tabs.map(t => `<div class="tab ${S.adminTab===t.k?'active':''}" onclick="S.adminTab='${t.k}';render()">${t.l}</div>`).join('')}
+    </div>
+
+    ${S.adminTab==='courts' ? adminCourtsTab() : ''}
+    ${S.adminTab==='equipments' ? adminEquipmentsTab() : ''}
+    ${S.adminTab==='timeslots' ? adminTimeSlotsTab() : ''}
+    ${S.adminTab==='bookings' ? adminBookingsTab() : ''}
+  `;
+}
+
+function adminCourtsTab(){
+  const rows = S.courts.length ? S.courts.map(c => `
+    <div class="row-item" style="cursor:default;">
+      <div>
+        <h3>${c.name}</h3>
+        <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="price-tag">${fmtMoney(c.pricePerHour)}<small>/ hora</small></div>
+        <button class="btn btn-danger btn-sm" onclick="deleteCourtAdmin('${c.id}')">Apagar</button>
+      </div>
+    </div>`).join('') : emptyState('calendar', 'Nenhum campo registado ainda.');
+
+  return `
+    <div class="section" style="border-top:none;padding-top:0;">
+      <div class="section-label">Novo campo</div>
+      <div class="field"><label>Nome</label><input id="af-court-name" type="text" placeholder="Campo 5"></div>
+      <div class="chips" style="margin-bottom:16px;">
+        <div class="chip selected" id="af-court-outdoor" onclick="toggleIndoorChip(false)">Outdoor</div>
+        <div class="chip" id="af-court-indoor" onclick="toggleIndoorChip(true)">Indoor</div>
+      </div>
+      <div class="field"><label>Preço por hora (€)</label><input id="af-court-price" type="number" min="0" step="0.5" value="80"></div>
+      <button class="btn btn-primary" onclick="createCourtAdmin()">Adicionar campo</button>
+    </div>
+    <div class="section">
+      <div class="section-label">Campos existentes</div>
+      ${rows}
+    </div>
+  `;
+}
+
+function toggleIndoorChip(indoor){
+  document.getElementById('af-court-indoor').classList.toggle('selected', indoor);
+  document.getElementById('af-court-outdoor').classList.toggle('selected', !indoor);
+}
+
+async function createCourtAdmin(){
+  const name = document.getElementById('af-court-name').value.trim();
+  const isIndoor = document.getElementById('af-court-indoor').classList.contains('selected');
+  const pricePerHour = +document.getElementById('af-court-price').value;
+  if (!name){ toast('Indica o nome do campo', 'error'); return; }
+  try{
+    await api(API.catalog, '/api/courts', { method:'POST', body:{ id: crypto.randomUUID(), name, isIndoor, pricePerHour, status:'Available' } });
+    toast('Campo criado!', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+async function deleteCourtAdmin(id){
+  try{
+    await api(API.catalog, `/api/courts/${id}`, { method:'DELETE' });
+    toast('Campo removido.', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+function adminEquipmentsTab(){
+  const rows = S.equipments.length ? S.equipments.map(e => `
+    <div class="equip-row">
+      <div>
+        <div class="name">${e.name}</div>
+        <div class="sub">${e.category} · stock ${e.stock}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="mono">${fmtMoney(e.rentalPrice)}</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteEquipmentAdmin('${e.id}')">Apagar</button>
+      </div>
+    </div>`).join('') : emptyState('calendar', 'Nenhum equipamento registado.');
+
+  return `
+    <div class="section" style="border-top:none;padding-top:0;">
+      <div class="section-label">Novo equipamento</div>
+      <div class="field"><label>Nome</label><input id="af-eq-name" type="text" placeholder="Raquete Pro"></div>
+      <div class="field"><label>Categoria</label><input id="af-eq-cat" type="text" placeholder="Padel"></div>
+      <div class="field"><label>Stock</label><input id="af-eq-stock" type="number" min="0" value="10"></div>
+      <div class="field"><label>Preço de aluguer (€)</label><input id="af-eq-price" type="number" min="0" step="0.5" value="15"></div>
+      <button class="btn btn-primary" onclick="createEquipmentAdmin()">Adicionar equipamento</button>
+    </div>
+    <div class="section">
+      <div class="section-label">Equipamento existente</div>
+      ${rows}
+    </div>
+  `;
+}
+
+async function createEquipmentAdmin(){
+  const name = document.getElementById('af-eq-name').value.trim();
+  const category = document.getElementById('af-eq-cat').value.trim() || 'Geral';
+  const stock = +document.getElementById('af-eq-stock').value;
+  const rentalPrice = +document.getElementById('af-eq-price').value;
+  if (!name){ toast('Indica o nome do equipamento', 'error'); return; }
+  try{
+    await api(API.catalog, '/api/equipments', { method:'POST', body:{ id: crypto.randomUUID(), name, category, stock, rentalPrice } });
+    toast('Equipamento criado!', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+async function deleteEquipmentAdmin(id){
+  try{
+    await api(API.catalog, `/api/equipments/${id}`, { method:'DELETE' });
+    toast('Equipamento removido.', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+function adminTimeSlotsTab(){
+  const rows = S.timeslots.length ? S.timeslots.map(t => `
+    <div class="row-item" style="cursor:default;">
+      <div><h3>${t.name}</h3><div class="meta">${t.startTime.slice(0,5)} – ${t.endTime.slice(0,5)}</div></div>
+      <button class="btn btn-danger btn-sm" onclick="deleteTimeSlotAdmin('${t.id}')">Apagar</button>
+    </div>`).join('') : emptyState('calendar', 'Nenhum horário registado.');
+
+  return `
+    <div class="section" style="border-top:none;padding-top:0;">
+      <div class="section-label">Novo horário</div>
+      <div class="field"><label>Nome</label><input id="af-slot-name" type="text" placeholder="Manhã"></div>
+      <div class="field"><label>Início</label><input id="af-slot-start" type="time" value="08:00"></div>
+      <div class="field"><label>Fim</label><input id="af-slot-end" type="time" value="09:30"></div>
+      <button class="btn btn-primary" onclick="createTimeSlotAdmin()">Adicionar horário</button>
+    </div>
+    <div class="section">
+      <div class="section-label">Horários existentes</div>
+      ${rows}
+    </div>
+  `;
+}
+
+async function createTimeSlotAdmin(){
+  const name = document.getElementById('af-slot-name').value.trim();
+  const startTime = document.getElementById('af-slot-start').value + ':00';
+  const endTime = document.getElementById('af-slot-end').value + ':00';
+  if (!name){ toast('Indica o nome do horário', 'error'); return; }
+  try{
+    await api(API.catalog, '/api/timeslots', { method:'POST', body:{ id: crypto.randomUUID(), name, startTime, endTime } });
+    toast('Horário criado!', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+async function deleteTimeSlotAdmin(id){
+  try{
+    await api(API.catalog, `/api/timeslots/${id}`, { method:'DELETE' });
+    toast('Horário removido.', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
+function adminBookingsTab(){
+  const sorted = S.allBookings.slice().sort((a,b) => new Date(b.startTime) - new Date(a.startTime));
+  const rows = sorted.length ? sorted.map(b => {
+    const court = S.courts.find(c => c.id === b.courtId);
+    return `
+      <div class="row-item" style="cursor:default;">
+        <div>
+          <h3>${court ? court.name : 'Campo'}</h3>
+          <div class="meta">${nameFor(b.hostPlayerId)} · ${fmtDate(b.startTime)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="status-pill status-${b.status}">${b.status}</span>
+          ${b.status==='Pending' ? `<button class="btn btn-ghost btn-sm" onclick="adminBookingAction('${b.id}','confirm')">Confirmar</button>` : ''}
+          ${b.status==='Pending' ? `<button class="btn btn-danger btn-sm" onclick="adminBookingAction('${b.id}','cancel')">Cancelar</button>` : ''}
+        </div>
+      </div>`;
+  }).join('') : emptyState('calendar', 'Nenhuma reserva no clube ainda.');
+
+  return `<div class="section" style="border-top:none;padding-top:0;">${rows}</div>`;
+}
+
+async function adminBookingAction(id, action){
+  try{
+    await api(API.booking, `/api/bookings/${id}/${action}`, { method:'PATCH' });
+    toast(action === 'confirm' ? 'Reserva confirmada!' : 'Reserva cancelada.', 'ok');
+    await loadAdmin();
+    render();
+  } catch(e){}
+}
+
 // ---------- SHELL ----------
 function emptyState(iconName, text){
   return `<div class="empty">${icon(iconName)}<p>${text}</p></div>`;
 }
 
-const navItems = [
-  { v:'home', i:'home', l:'Início' },
-  { v:'mybookings', i:'calendar', l:'Reservas' },
-  { v:'ranking', i:'trophy', l:'Ranking' },
-  { v:'profile', i:'user', l:'Perfil' },
-];
+function visibleNavItems(){
+  const items = [
+    { v:'home', i:'home', l:'Início' },
+    { v:'mybookings', i:'calendar', l:'Reservas' },
+    { v:'ranking', i:'trophy', l:'Ranking' },
+    { v:'profile', i:'user', l:'Perfil' },
+  ];
+  if (S.isAdmin) items.push({ v:'admin', i:'settings', l:'Gestão' });
+  return items;
+}
 
 function bottomNav(){
   return `<div class="bottom-nav">
-    ${navItems.map(it => `
+    ${visibleNavItems().map(it => `
       <button class="nav-item ${S.view===it.v?'active':''}" onclick="navTo('${it.v}')">${icon(it.i)}<span>${it.l}</span></button>
     `).join('')}
   </div>`;
@@ -1422,13 +1651,13 @@ function sidebar(){
     ${logoBlock()}
     <div class="sb-section-label">Menu principal</div>
     <nav class="sb-nav">
-      ${navItems.map(it => `
+      ${visibleNavItems().map(it => `
         <button class="sb-nav-item ${S.view===it.v?'active':''}" onclick="navTo('${it.v}')">${icon(it.i)}${it.l}</button>
       `).join('')}
     </nav>
     <button class="sb-user" onclick="navTo('profile')">
       <div class="avatar">${displayName()[0].toUpperCase()}</div>
-      <div class="info"><div class="n">${displayName()}</div><div class="t">Membro</div></div>
+      <div class="info"><div class="n">${displayName()}</div><div class="t">${S.isAdmin?'Admin':'Membro'}</div></div>
     </button>
   `;
 }
@@ -1437,10 +1666,11 @@ async function navTo(view){
   if (view === 'mybookings') await loadMyBookings();
   if (view === 'ranking') await loadRanking();
   if (view === 'profile') await loadProfile();
+  if (view === 'admin') await loadAdmin();
   go(view);
 }
 
-const authedViews = ['home','court','payment','mybookings','booking','addequip','newgame','game','ranking','profile'];
+const authedViews = ['home','court','payment','mybookings','booking','addequip','newgame','game','ranking','profile','admin'];
 
 async function render(){
   const screenEl = document.getElementById('screen');
@@ -1459,6 +1689,7 @@ async function render(){
     game: screenGame,
     ranking: screenRanking,
     profile: screenProfile,
+    admin: screenAdmin,
   };
 
   screenEl.innerHTML = renderers[S.view] ? renderers[S.view]() : '<div class="loader"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';

@@ -2,7 +2,10 @@
 using Catalog.Domain.Repositories;
 using Catalog.Infrastructure.Data;
 using Catalog.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FacilitiesCatalog.API
 {
@@ -13,6 +16,22 @@ namespace FacilitiesCatalog.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+                ?? throw new InvalidOperationException("JwtSettings:Secret não está configurado.");
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret))
+                    };
+                });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -48,6 +67,7 @@ namespace FacilitiesCatalog.API
             app.UseCors("DefaultCors");
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

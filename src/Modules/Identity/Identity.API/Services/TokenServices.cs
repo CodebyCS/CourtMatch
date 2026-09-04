@@ -15,7 +15,7 @@ public class TokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(ApplicationUser user)
+    public string GenerateToken(ApplicationUser user, IEnumerable<string>? roles = null)
     {
         var secretKey = _configuration["JwtSettings:Secret"];
 
@@ -26,14 +26,18 @@ public class TokenService
 
         var key = Encoding.ASCII.GetBytes(secretKey);
 
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+            new Claim(ClaimTypes.Name, user.FullName ?? string.Empty)
+        };
+        foreach (var role in roles ?? Enumerable.Empty<string>())
+            claims.Add(new Claim(ClaimTypes.Role, role));
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.Name, user.FullName ?? string.Empty)
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(2), // Validade do token
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),

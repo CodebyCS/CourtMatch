@@ -60,7 +60,8 @@ public class AuthController : ControllerBase
         if (!isPasswordValid)
             return Unauthorized(new { message = "invalid email or password."});
 
-        var token = _tokenService.GenerateToken(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = _tokenService.GenerateToken(user, roles);
 
         return Ok(new UserLoginResponse
         {

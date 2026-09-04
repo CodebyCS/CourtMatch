@@ -1,5 +1,6 @@
 ﻿using Catalog.Application.DTOs;
 using Catalog.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacilitiesCatalog.API.Controllers
@@ -22,6 +23,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TimeSlotDto dto, CancellationToken cancellationToken)
         {
@@ -29,6 +31,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] TimeSlotDto dto, CancellationToken cancellationToken)
         {
@@ -36,6 +39,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
