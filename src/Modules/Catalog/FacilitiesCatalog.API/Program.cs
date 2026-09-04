@@ -3,6 +3,8 @@ using Catalog.Domain.Repositories;
 using Catalog.Infrastructure.Data;
 using Catalog.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Catalog.Application.Validators;
+using FluentValidation;
 
 namespace FacilitiesCatalog.API
 {

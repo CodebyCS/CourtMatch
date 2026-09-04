@@ -24,6 +24,7 @@ namespace Catalog.Infrastructure.Data
 
             modelBuilder.Entity<Court>().Property(c => c.Name).HasMaxLength(100);
             modelBuilder.Entity<Equipment>().Property(e => e.Name).HasMaxLength(100);
+            modelBuilder.Entity<Court>().Property(c => c.Status).HasConversion<string>().HasMaxLength(30);
         }
     }
 }

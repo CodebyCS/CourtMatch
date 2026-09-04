@@ -9,9 +9,11 @@ namespace Catalog.Application.Services
 {
     public interface ICourtService
     {
-        Task<IEnumerable<CourtDto>> GetAllCourtsAsync(CancellationToken cancellationToken);
-        Task CreateCourtAsync(CourtDto courtDto, CancellationToken cancellationToken);
-        Task UpdateCourtAsync(CourtDto courtDto, CancellationToken cancellationToken);
+        Task<IEnumerable<CourtResponse>> GetAllCourtsAsync(CancellationToken cancellationToken);
+        Task<CourtResponse> GetCourtByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<CourtResponse> CreateCourtAsync(CreateCourtRequest request, CancellationToken cancellationToken);
+        Task UpdateCourtAsync(Guid id, UpdateCourtRequest request, CancellationToken cancellationToken);
         Task DeleteCourtAsync(Guid id, CancellationToken cancellationToken);
+        Task BlockCourtAsync(Guid id, CancellationToken cancellationToken);
     }
 }

@@ -1,11 +1,9 @@
 ﻿using Catalog.Application.DTOs;
+using Catalog.Domain.Domain;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
+using Shared.Contracts.Exceptions;
 
 namespace Catalog.Application.Services
 {
@@ -13,56 +11,151 @@ namespace Catalog.Application.Services
     {
         private readonly ICourtRepository _courtRepository;
 
-        public CourtService(ICourtRepository courtRepository)
+        private readonly IValidator<CreateCourtRequest> _createValidator;
+
+        private readonly IValidator<UpdateCourtRequest> _updateValidator;
+
+        public CourtService(
+            ICourtRepository courtRepository,
+            IValidator<CreateCourtRequest> createValidator,
+            IValidator<UpdateCourtRequest> updateValidator)
         {
             _courtRepository = courtRepository;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+
         }
 
-        public async Task<IEnumerable<CourtDto>> GetAllCourtsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<CourtResponse>> GetAllCourtsAsync(CancellationToken cancellationToken)
         {
-            var courts = await _courtRepository.GetAllAsync();
+            var courts = await _courtRepository.GetAllAsync(cancellationToken);
 
-            return courts.Select(c => new CourtDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                IsIndoor = c.IsIndoor,
-                PricePerHour = c.PricePerHour,
-                Status = c.Status
-            }).ToList();
+            return courts.Select(ToResponse).ToList();
         }
 
-        public async Task CreateCourtAsync(CourtDto courtDto, CancellationToken cancellationToken)
+        public async Task<CourtResponse> GetCourtByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken)
         {
+            var court = await _courtRepository.GetByIdAsync(id, cancellationToken);
+
+            if (court is null)
+                throw new NotFoundException("Court not found.");
+
+            return ToResponse(court);
+        }
+
+        public async Task<CourtResponse> CreateCourtAsync(
+            CreateCourtRequest request,
+            CancellationToken cancellationToken)
+        {
+            await ValidateCreateRequestAsync(request, cancellationToken);
+
             var court = new Court
             {
-                Id = courtDto.Id == Guid.Empty ? Guid.NewGuid() : courtDto.Id,
-                Name = courtDto.Name,
-                IsIndoor = courtDto.IsIndoor,
-                PricePerHour = courtDto.PricePerHour,
-                Status = string.IsNullOrEmpty(courtDto.Status) ? "Available" : courtDto.Status
+                Id = Guid.NewGuid(),
+                Name = request.Name.Trim(),
+                IsIndoor = request.IsIndoor,
+                PricePerHour = request.PricePerHour,
+                Status = CourtStatus.Active
             };
 
-            await _courtRepository.AddAsync(court);
+            await _courtRepository.AddAsync(court, cancellationToken);
+
+            return ToResponse(court);
         }
 
-        public async Task UpdateCourtAsync(CourtDto courtDto, CancellationToken cancellationToken)
+        public async Task UpdateCourtAsync(
+            Guid id,
+            UpdateCourtRequest request,
+            CancellationToken cancellationToken)
         {
-            var court = new Court
+            await ValidateUpdateRequestAsync(request, cancellationToken);
+
+            var court = await _courtRepository.GetByIdAsync(id, cancellationToken);
+
+            if (court is null)
+                throw new NotFoundException("Court not found.");
+
+            court.Name = request.Name.Trim();
+            court.IsIndoor = request.IsIndoor;
+            court.PricePerHour = request.PricePerHour;
+            court.Status = request.Status;
+
+            await _courtRepository.UpdateAsync(court, cancellationToken);
+        }
+
+        public async Task DeleteCourtAsync(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var deleted = await _courtRepository.DeleteAsync(id, cancellationToken);
+
+            if (!deleted)
+                throw new NotFoundException("Court not found.");
+        }
+
+        public async Task BlockCourtAsync(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var court = await _courtRepository.GetByIdAsync(id, cancellationToken);
+
+            if (court is null)
+                throw new NotFoundException("Court not found.");
+
+            court.Status = CourtStatus.UnderMaintenance;
+
+            await _courtRepository.UpdateAsync(court, cancellationToken);
+        }
+
+        private async Task ValidateCreateRequestAsync(
+            CreateCourtRequest request,
+            CancellationToken cancellationToken)
+        {
+            var validation = await _createValidator.ValidateAsync(
+                request,
+                cancellationToken);
+
+            if (!validation.IsValid)
             {
-                Id = courtDto.Id,
-                Name = courtDto.Name,
-                IsIndoor = courtDto.IsIndoor,
-                PricePerHour = courtDto.PricePerHour,
-                Status = courtDto.Status
-            };
+                var errors = string.Join(
+                    " ",
+                    validation.Errors.Select(error => error.ErrorMessage));
 
-            await _courtRepository.UpdateAsync(court);
+                throw new BadRequestException(errors);
+            }
         }
 
-        public async Task DeleteCourtAsync(Guid id, CancellationToken cancellationToken)
+        private async Task ValidateUpdateRequestAsync(
+            UpdateCourtRequest request,
+            CancellationToken cancellationToken)
         {
-            await _courtRepository.DeleteAsync(id);
+            var validation = await _updateValidator.ValidateAsync(
+                request,
+                cancellationToken);
+
+            if (!validation.IsValid)
+            {
+                var errors = string.Join(
+                    " ",
+                    validation.Errors.Select(error => error.ErrorMessage));
+
+                throw new BadRequestException(errors);
+            }
         }
+
+        private static CourtResponse ToResponse(Court court)
+        {
+            return new CourtResponse
+            {
+                Id = court.Id,
+                Name = court.Name,
+                IsIndoor = court.IsIndoor,
+                PricePerHour = court.PricePerHour,
+                Status = court.Status
+            };
+        }
+
     }
 }
