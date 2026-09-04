@@ -1,4 +1,6 @@
-﻿namespace Catalog.Domain.Entities;
+﻿using Catalog.Domain.Domain;
+
+namespace Catalog.Domain.Entities;
 
 public class Court
 {
@@ -10,5 +12,5 @@ public class Court
 
     public decimal PricePerHour { get; set; }
 
-    public string Status { get; set; } = "Available";
+    public CourtStatus Status { get; set; } = CourtStatus.Active;
 }
