@@ -389,7 +389,6 @@ const S = {
   userNames: {},
   inviteTeam: 1,
   sets: [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }],
-  payMethod: 'mbway',
   newGame: null,
 };
 
@@ -740,21 +739,14 @@ function stepEquip(id, delta){
 // ---------- PAYMENT ----------
 function screenPayment(){
   const c = S.court;
-  const { startTime, endTime } = bookingTimes();
   const courtPrice = c.pricePerHour * S.selDuration;
   const total = courtPrice + equipTotal();
   const dateObj = new Date(S.date + 'T00:00:00');
 
-  const methods = [
-    { k:'mbway', i:'phone', n:'MB WAY', t:'Via telemóvel' },
-    { k:'card', i:'card', n:'Cartão de Crédito', t:'Visa, Mastercard, Amex' },
-    { k:'apple', i:'apple', n:'Apple Pay', t:'Autenticação Face ID' },
-  ];
-
   return `
     ${backLink('court','Cancelar')}
     <div class="eyebrow">Reserva · ${c.name} — ${c.isIndoor?'Indoor':'Outdoor'}</div>
-    <h2 style="font-size:26px;margin:0 0 22px;">Pagamento</h2>
+    <h2 style="font-size:26px;margin:0 0 22px;">Confirmar reserva</h2>
 
     <div class="split">
       <div class="col-a">
@@ -763,24 +755,12 @@ function screenPayment(){
           <div class="summary-row"><span>Tipo</span><span>${c.isIndoor?'Interior · Climatizado':'Exterior · Descoberto'}</span></div>
           <div class="summary-row"><span>Data</span><span>${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</span></div>
           <div class="summary-row"><span>Horário</span><span>${fmtHour(S.selHour)} – ${fmtDur(S.selDuration)}</span></div>
-          <div class="summary-row"><span>Taxa de reserva</span><span>${fmtMoney(0)}</span></div>
           <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
         </div>
         <div style="width:140px;color:var(--text-dim);margin-top:10px;">${courtDiagram()}</div>
       </div>
       <div class="col-b">
-        <div class="section-label">Método de pagamento</div>
-        ${methods.map(m => `
-          <div class="pay-option ${S.payMethod===m.k?'selected':''}" onclick="S.payMethod='${m.k}';render()">
-            <div class="icon-wrap">${icon(m.i)}</div>
-            <div class="info"><div class="n">${m.n}</div><div class="t">${m.t}</div></div>
-            ${S.payMethod===m.k ? `<div class="check">${icon('check')}</div>` : ''}
-          </div>
-        `).join('')}
-        <button class="btn btn-primary" style="margin-top:8px;" onclick="submitBooking()">Confirmar e Pagar · ${fmtMoney(total)}</button>
-        <p class="mono" style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:14px;text-transform:uppercase;letter-spacing:0.04em;">
-          Ambiente de teste — nenhuma cobrança real é feita, só a reserva é gravada
-        </p>
+        <button class="btn btn-primary" onclick="submitBooking()">Confirmar reserva · ${fmtMoney(total)}</button>
       </div>
     </div>
   `;
@@ -855,6 +835,9 @@ async function openBookingDetail(id){
 
 async function openGame(id){
   S.game = S.bookingGames.find(g => g.id === id);
+  S.sets = S.game.sets && S.game.sets.length
+    ? S.game.sets.map(s => ({ setNumber:s.setNumber, teamOneGames:s.teamOneGames, teamTwoGames:s.teamTwoGames }))
+    : [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }];
   await resolveUserNames(S.game.participants.map(p => p.userId));
   go('game');
 }
@@ -1128,6 +1111,7 @@ async function saveNewGame(){
       participants: ng.players.map(p => ({ userId: p.userId, teamNumber: p.team }))
     }});
     S.bookingGames.push(S.game);
+    S.sets = [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }];
     toast('Jogo criado!', 'ok');
     go('game');
   } catch(e){}
@@ -1153,10 +1137,6 @@ function screenGame(){
           </div>`).join('') : `<div class="mono" style="color:var(--text-dim);font-size:11.5px;">Ninguém ainda</div>`}
       </div>`;
   }).join('');
-
-  const setsRows = g.sets && g.sets.length ? g.sets.map(s => `
-    <div class="summary-row"><span>Set ${s.setNumber}</span><span>${s.teamOneGames} – ${s.teamTwoGames}</span></div>
-  `).join('') : '';
 
   return `
     ${backLink('booking','Voltar')}
@@ -1186,11 +1166,9 @@ function screenGame(){
           </div>
         ` : ''}
 
-        ${setsRows ? `<div class="section"><div class="section-label">Placar</div>${setsRows}</div>` : ''}
-
-        ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
+        ${g.status !== 'Cancelled' ? `
           <div class="section">
-            <div class="section-label">Registrar resultado</div>
+            <div class="section-label">${g.sets && g.sets.length ? 'Editar resultado' : 'Registrar resultado'}</div>
             ${S.sets.map((s,i) => `
               <div class="set-row">
                 <span style="width:40px;">Set ${s.setNumber}</span>
@@ -1239,9 +1217,15 @@ async function doInviteSearch(term){
   }
 }
 
+function syncBookingGame(){
+  const idx = S.bookingGames.findIndex(g => g.id === S.game.id);
+  if (idx >= 0) S.bookingGames[idx] = S.game;
+}
+
 async function invitePlayer(userId){
   try{
     S.game = await api(API.game, `/api/games/${S.game.id}/invite`, { method:'POST', body:{ userId, teamNumber: S.inviteTeam } });
+    syncBookingGame();
     await resolveUserNames([userId]);
     toast('Convite enviado!', 'ok');
     render();
@@ -1252,6 +1236,7 @@ async function respondInvite(confirm){
   try{
     const action = confirm ? 'confirm' : 'decline';
     S.game = await api(API.game, `/api/games/${S.game.id}/players/${S.userId}/${action}`, { method:'POST' });
+    syncBookingGame();
     toast(confirm ? 'Participação confirmada!' : 'Convite recusado.', 'ok');
     render();
   } catch(e){}
@@ -1265,8 +1250,9 @@ function addSet(){
 async function registerResult(){
   try{
     S.game = await api(API.game, `/api/games/${S.game.id}/result`, { method:'POST', body:{ sets: S.sets } });
-    toast('Resultado registrado!', 'ok');
-    S.sets = [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }];
+    syncBookingGame();
+    S.sets = S.game.sets.map(s => ({ setNumber:s.setNumber, teamOneGames:s.teamOneGames, teamTwoGames:s.teamTwoGames }));
+    toast('Resultado salvo!', 'ok');
     render();
   } catch(e){}
 }
