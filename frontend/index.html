@@ -75,7 +75,7 @@
       background:var(--bg); position:sticky; top:0; height:100vh;
     }
     #phone{ width:auto; flex:1; max-width:none; height:auto; min-height:100vh; border-radius:0; box-shadow:none; border:none; }
-    #screen{ padding:44px 56px 60px; max-width:820px; }
+    #screen{ padding:44px 56px 60px; max-width:1120px; }
     #nav-slot{ display:none; }
   }
 
@@ -108,6 +108,8 @@
   }
   .icon-btn:active{ border-color:var(--gold); }
   .icon-btn svg{ width:17px; height:17px; stroke:var(--text); }
+  .back-link{ display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--text-dim); font-family:'Roboto Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; padding:0; margin-bottom:10px; }
+  .back-link svg{ width:14px; height:14px; stroke:currentColor; }
 
   .logo{ display:flex; align-items:center; gap:10px; }
   .logo .bar{ width:3px; height:26px; background:var(--gold); flex-shrink:0; }
@@ -166,11 +168,18 @@
   .status-Completed{ color:var(--text-dim); }
 
   .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .hchips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin:0 -2px 0; }
+  .hchips::-webkit-scrollbar{ height:4px; }
   .chip{
     padding:10px 14px; border-radius:var(--radius); background:transparent; border:1px solid var(--line-strong);
     font-family:'Roboto Mono',monospace; font-size:12.5px; font-weight:500; cursor:pointer; color:var(--text);
+    flex-shrink:0; white-space:nowrap;
   }
   .chip.selected{ background:var(--gold); color:#141008; border-color:var(--gold); font-weight:700; }
+  .chip-sm{ padding:5px 8px; font-size:10.5px; }
+  .chip-removable{ display:inline-flex; align-items:center; gap:7px; }
+  .chip-removable button{ background:none; border:none; color:inherit; cursor:pointer; font-size:14px; line-height:1; padding:0; opacity:0.7; }
+  .chip-removable button:hover{ opacity:1; }
 
   .stepper{ display:flex; align-items:center; gap:10px; }
   .stepper button{
@@ -229,7 +238,7 @@
   .tab{ flex:1; text-align:center; padding:12px; font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; color:var(--text-dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .tab.active{ color:var(--gold); border-bottom-color:var(--gold); }
 
-  .avatar{ width:36px; height:36px; border-radius:var(--radius); background:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Anton',sans-serif; font-size:14px; color:#141008; }
+  .avatar{ width:36px; height:36px; border-radius:var(--radius); background:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Anton',sans-serif; font-size:14px; color:#141008; flex-shrink:0; }
 
   .rank-row{ display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid var(--line); }
   .rank-row:last-child{ border-bottom:none; }
@@ -251,6 +260,85 @@
   @keyframes bounce{ 0%,80%,100%{ transform:translateY(0);} 40%{ transform:translateY(-6px);} }
 
   a{ color:var(--gold); }
+
+  /* ---- desktop 2-column split ---- */
+  .split{ display:flex; flex-direction:column; gap:26px; }
+  @media (min-width:900px){
+    .split{ flex-direction:row; gap:44px; align-items:flex-start; }
+    .split > .col-a{ width:300px; flex-shrink:0; }
+    .split > .col-b{ flex:1; min-width:0; }
+  }
+
+  /* ---- home court table ---- */
+  .ct-head{ display:none; }
+  @media (min-width:900px){
+    .ct-head{
+      display:grid; grid-template-columns:2fr 1.3fr 2fr 1fr; gap:16px; padding-bottom:10px; margin-bottom:4px;
+      border-bottom:1px solid var(--line); font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-dim);
+      text-transform:uppercase; letter-spacing:0.08em;
+    }
+  }
+  .ct-row{ display:flex; flex-direction:column; gap:10px; padding:16px 0; border-bottom:1px solid var(--line); }
+  .ct-row:last-child{ border-bottom:none; }
+  @media (min-width:900px){
+    .ct-row{ display:grid; grid-template-columns:2fr 1.3fr 2fr 1fr; gap:16px; align-items:center; }
+  }
+  .ct-row.unavailable{ opacity:0.5; }
+  .ct-row h3{ font-family:'Outfit',sans-serif; font-weight:700; text-transform:none; font-size:16px; margin:0 0 6px; letter-spacing:0; }
+  .ct-slots{ display:flex; flex-wrap:wrap; gap:6px; }
+  .ct-slot-chip{
+    padding:4px 8px; border-radius:var(--radius); border:1px solid var(--line-strong);
+    font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--text-dim); background:transparent; cursor:pointer;
+  }
+  .ct-slot-chip.selected{ border-color:var(--gold); color:var(--gold); }
+  .ct-price-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  @media (min-width:900px){ .ct-price-row{ justify-content:flex-end; } }
+
+  .diagrams-row{ display:none; }
+  @media (min-width:900px){
+    .diagrams-row{ display:flex; gap:20px; flex-wrap:wrap; margin-top:30px; padding-top:24px; border-top:1px solid var(--line); }
+    .diagram-card{ text-align:center; }
+    .diagram-card .box{ border:1px solid var(--line-strong); border-radius:var(--radius); padding:8px; color:var(--text-dim); }
+    .diagram-card.avail .box{ color:var(--gold); border-color:rgba(200,169,74,0.35); }
+    .diagram-card .lbl{ font-family:'Roboto Mono',monospace; font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; }
+  }
+
+  /* ---- payment ---- */
+  .pay-option{ display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line-strong); border-radius:var(--radius); cursor:pointer; margin-bottom:10px; }
+  .pay-option.selected{ border-color:var(--gold); background:var(--gold-soft); }
+  .pay-option .icon-wrap{ width:34px; height:34px; border:1px solid var(--line-strong); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--text-dim); }
+  .pay-option.selected .icon-wrap{ border-color:var(--gold); color:var(--gold); }
+  .pay-option .info{ flex:1; min-width:0; }
+  .pay-option .info .n{ font-family:'Outfit',sans-serif; font-weight:700; font-size:13.5px; }
+  .pay-option .info .t{ font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+  .pay-option .check{ color:var(--gold); width:18px; height:18px; flex-shrink:0; }
+
+  /* ---- court diagram svg ---- */
+  .court-svg{ display:block; color:var(--text-dim); }
+
+  /* ---- format tiles ---- */
+  .format-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .format-tile{ border:1px solid var(--line-strong); border-radius:var(--radius); padding:22px 10px; text-align:center; cursor:pointer; }
+  .format-tile.selected{ border-color:var(--gold); background:var(--gold-soft); }
+  .format-tile .big{ font-family:'Anton',sans-serif; font-size:22px; color:var(--text); }
+  .format-tile.selected .big{ color:var(--gold); }
+  .format-tile .sub{ font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; }
+
+  /* ---- invite result rows ---- */
+  .invite-row{ display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .invite-row:last-child{ border-bottom:none; }
+  .invite-row .info{ flex:1; min-width:0; }
+  .invite-row .info .n{ font-weight:700; font-size:13px; }
+  .invite-row .info .t{ font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; }
+
+  /* ---- settings rows (profile) ---- */
+  .settings-row{ display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); cursor:pointer; background:none; border-left:none; border-right:none; border-top:none; width:100%; text-align:left; color:var(--text); }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row .icon-wrap{ width:32px; height:32px; border:1px solid var(--line-strong); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--text-dim); }
+  .settings-row .info{ flex:1; min-width:0; }
+  .settings-row .info .n{ font-family:'Outfit',sans-serif; font-weight:700; font-size:13.5px; }
+  .settings-row .info .t{ font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; }
+  .settings-row .chev{ width:14px; height:14px; stroke:var(--text-dim); flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -271,6 +359,9 @@ const API = {
   identity: "http://localhost:5257",
 };
 
+const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20];
+const DURATIONS = [0.5,1,1.5,2,2.5,3];
+
 const store = {
   get(k){ try{ return localStorage.getItem(k); } catch(e){ return null; } },
   set(k,v){ try{ localStorage.setItem(k,v); } catch(e){} },
@@ -284,10 +375,11 @@ const S = {
   fullName: store.get('cm_fullName') || '',
   view: null,
   authMode: 'login',
-  courts: [], equipments: [], timeslots: [],
+  courts: [], equipments: [], timeslots: [], allBookings: [],
+  date: '', selHour: 18, selDuration: 2,
   court: null,
-  date: '', slot: null,
   equipQty: {},
+  addEquipQty: {},
   bookings: [],
   booking: null,
   bookingGames: [],
@@ -297,6 +389,8 @@ const S = {
   userNames: {},
   inviteTeam: 1,
   sets: [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }],
+  payMethod: 'mbway',
+  newGame: null,
 };
 
 function icon(name){
@@ -309,8 +403,27 @@ function icon(name){
     racket: '<circle cx="12" cy="8" r="5"/><path d="M12 13v8M9 21h6"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    check: '<path d="M20 6L9 17l-5-5"/>',
+    phone: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',
+    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    apple: '<path d="M16 3c-1 1-2.5 1.7-4 1.5C11.6 3 12.8 1 14.5 1c.3 1-.2 2-1.5 2M6 8c-2.5 1.5-3 5-1 8.5 1.5 2.5 3 4.5 5 4.5 1.3 0 1.8-.8 3.5-.8s2.1.8 3.5.8c1.7 0 3.2-2 4.5-4.5-3-1.5-3.5-6-.5-7.5-1.5-2-4-2.5-5-2.5-1.5 0-2.8.9-4 .9S7.5 6.5 6 8z"/>',
+    edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
+    shield: '<path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/>',
+    bell: '<path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 004 0"/>',
+    receipt: '<path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+    chevron: '<path d="M9 18l6-6-6-6"/>',
   };
   return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths[name]||''}</svg>`;
+}
+
+function courtDiagram(){
+  return `<svg class="court-svg" viewBox="0 0 100 68" width="100%" height="auto" fill="none" stroke="currentColor" stroke-width="1.6">
+    <rect x="2" y="2" width="96" height="64" rx="2"/>
+    <line x1="2" y1="34" x2="98" y2="34"/>
+    <rect x="2" y="17" width="27" height="34"/>
+    <rect x="71" y="17" width="27" height="34"/>
+    <line x1="50" y1="2" x2="50" y2="66" stroke-dasharray="2 3" opacity="0.5"/>
+  </svg>`;
 }
 
 function toast(msg, type='ok'){
@@ -353,12 +466,13 @@ async function api(base, path, { method='GET', body, auth=true } = {}){
 }
 
 function fmtMoney(v){ return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+function fmtHour(h){ const hh=Math.floor(h), mm=Math.round((h-hh)*60); return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+function fmtDur(h){ return h===Math.floor(h) ? h+'h' : (h-0.5)+'h30'; }
 function fmtDate(iso){
   const d = new Date(iso);
   return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }) + ' · ' +
     d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
 }
-function fmtTimeSpan(ts){ return (ts||'').slice(0,5); }
 
 function go(view){ S.view = view; render(); }
 
@@ -388,6 +502,10 @@ function nameFor(userId){
 
 function logoBlock(){
   return `<div class="logo"><div class="bar"></div><div class="logo-text"><span class="name">CourtMatch</span><span class="tagline">Clube de Padel</span></div></div>`;
+}
+
+function backLink(view, label){
+  return `<button class="back-link" onclick="go('${view}')">${icon('back')}${label}</button>`;
 }
 
 // ---------- AUTH ----------
@@ -445,48 +563,109 @@ async function submitAuth(){
 
 // ---------- HOME ----------
 async function loadCatalog(){
-  const [courts, equipments, timeslots] = await Promise.all([
+  const [courts, equipments, timeslots, allBookings] = await Promise.all([
     api(API.catalog, '/api/courts'),
     api(API.catalog, '/api/equipments'),
     api(API.catalog, '/api/timeslots'),
+    api(API.booking, '/api/bookings?startDate=2020-01-01T00:00:00&endDate=2035-01-01T00:00:00'),
   ]);
   S.courts = courts || []; S.equipments = equipments || []; S.timeslots = timeslots || [];
+  S.allBookings = (allBookings || []).filter(b => b.status !== 'Cancelled');
+  if (!S.date) S.date = new Date().toISOString().slice(0,10);
+}
+
+function freeHoursFor(courtId, dateStr, duration){
+  const dayBookings = S.allBookings.filter(b => b.courtId === courtId && b.startTime.slice(0,10) === dateStr);
+  return HOURS.filter(h => {
+    if (h + duration > 21) return false;
+    const start = new Date(`${dateStr}T${fmtHour(h)}:00`);
+    const end = new Date(start.getTime() + duration*3600*1000);
+    return !dayBookings.some(b => {
+      const bs = new Date(b.startTime), be = new Date(b.endTime);
+      return start < be && end > bs;
+    });
+  });
 }
 
 function screenHome(){
-  if (!S.date) S.date = new Date().toISOString().slice(0,10);
-  const duration = S.slot ? slotDuration(S.slot) : 1;
+  const dateObj = new Date(S.date + 'T00:00:00');
+  const today = new Date().toISOString().slice(0,10);
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0,10);
 
-  const slotChips = S.timeslots.length ? `<div class="chips">${S.timeslots.map(t => `
-      <div class="chip ${S.slot && S.slot.id===t.id ? 'selected':''}" onclick="pickSlot('${t.id}')">${fmtTimeSpan(t.startTime)}–${fmtTimeSpan(t.endTime)}</div>
-    `).join('')}</div>` : `<p class="mono" style="color:var(--text-dim);font-size:11px;">Nenhum horário cadastrado no clube ainda.</p>`;
+  const hourChips = `<div class="hchips">${HOURS.map(h => `
+    <div class="chip ${S.selHour===h?'selected':''}" onclick="S.selHour=${h};render()">${fmtHour(h)}</div>
+  `).join('')}</div>`;
 
-  const list = S.courts.length ? S.courts.map(c => `
-    <div class="row-item" onclick="openCourt('${c.id}')">
-      <div>
-        <h3>${c.name}</h3>
-        <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:16px;">
-        <div class="price-tag">${fmtMoney(c.pricePerHour*duration)}<small>${duration}h · ${fmtMoney(c.pricePerHour)}/h</small></div>
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCourt('${c.id}')">Reservar</button>
-      </div>
-    </div>`).join('') : emptyState('calendar', 'Nenhuma quadra cadastrada ainda.');
+  const durChips = `<div class="chips">${DURATIONS.map(d => `
+    <div class="chip ${S.selDuration===d?'selected':''}" onclick="S.selDuration=${d};render()">${fmtDur(d)}</div>
+  `).join('')}</div>`;
+
+  const rows = S.courts.length ? S.courts.map(c => {
+    const free = freeHoursFor(c.id, S.date, S.selDuration);
+    const available = free.length > 0;
+    const price = c.pricePerHour * S.selDuration;
+    return `
+      <div class="ct-row ${available?'':'unavailable'}">
+        <div>
+          <h3>${c.name}</h3>
+          <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
+        </div>
+        <div class="meta mono" style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">${c.isIndoor?'Interior · Climatizado':'Exterior · Descoberto'}</div>
+        <div class="ct-slots">
+          ${free.length ? free.map(h => `<div class="ct-slot-chip ${S.selHour===h?'selected':''}" onclick="S.selHour=${h};render()">${fmtHour(h)}</div>`).join('')
+            : `<span class="mono" style="font-size:10.5px;color:var(--clay);text-transform:uppercase;">Indisponível</span>`}
+        </div>
+        <div class="ct-price-row">
+          <div class="price-tag">${fmtMoney(price)}<small>${fmtDur(S.selDuration)} · ${fmtMoney(c.pricePerHour)}/h</small></div>
+          <button class="btn btn-primary btn-sm" ${available?'':'disabled'} onclick="openCourt('${c.id}')">${available?'Reservar':'Indisponível'}</button>
+        </div>
+      </div>`;
+  }).join('') : emptyState('calendar', 'Nenhuma quadra cadastrada ainda.');
+
+  const diagrams = S.courts.length ? `<div class="diagrams-row">${S.courts.map(c => {
+    const available = freeHoursFor(c.id, S.date, S.selDuration).length > 0;
+    return `<div class="diagram-card ${available?'avail':''}" style="width:110px;">
+      <div class="box">${courtDiagram()}</div>
+      <div class="lbl">${c.name}</div>
+    </div>`;
+  }).join('')}</div>` : '';
 
   return `
     <div class="header-row" style="margin-bottom:26px;">
       ${logoBlock()}
       <button class="avatar" style="border:none;cursor:pointer;" onclick="navTo('profile')">${displayName()[0].toUpperCase()}</button>
     </div>
-    <div class="eyebrow">Campos · ${new Date(S.date+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
-    <h2 style="font-size:24px;margin:0 0 20px;">Pesquisar campo</h2>
+    <div class="eyebrow">CourtMatch · ${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+    <h2 style="font-size:26px;margin:0 0 22px;">Pesquisar campo</h2>
 
-    <div class="field"><label>Data</label><input type="date" value="${S.date}" onchange="S.date=this.value;render()"></div>
-    <div class="field"><label>Horário</label>${slotChips}</div>
+    <div class="split">
+      <div class="col-a">
+        <div class="field-label section-label">Data</div>
+        <div class="chips" style="margin-bottom:16px;">
+          <div class="chip ${S.date===today?'selected':''}" onclick="S.date='${today}';render()">Hoje</div>
+          <div class="chip ${S.date===tomorrow?'selected':''}" onclick="S.date='${tomorrow}';render()">Amanhã</div>
+        </div>
+        <div class="field"><input type="date" value="${S.date}" onchange="S.date=this.value;render()"></div>
 
-    <div class="section">
-      <div class="section-label">Campos disponíveis</div>
-      ${list}
+        <div class="section-label" style="margin-top:6px;">Hora de início</div>
+        ${hourChips}
+
+        <div class="section-label" style="margin-top:16px;">Duração</div>
+        ${durChips}
+
+        <div class="section" style="margin-top:8px;">
+          <div class="section-label">Seleção</div>
+          <div class="price-tag" style="text-align:left;font-size:24px;">${fmtHour(S.selHour)}</div>
+          <div class="price-tag" style="text-align:left;font-size:24px;">${fmtDur(S.selDuration)}</div>
+          <div class="meta" style="margin-top:6px;">${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+        </div>
+      </div>
+
+      <div class="col-b">
+        <div class="ct-head"><span>Campo</span><span>Tipo</span><span>Horários livres</span><span style="text-align:right;">€ / hora</span></div>
+        ${rows}
+        ${diagrams}
+      </div>
     </div>
   `;
 }
@@ -497,13 +676,7 @@ async function openCourt(id){
   go('court');
 }
 
-// ---------- COURT / BOOKING ----------
-function slotDuration(slot){
-  const [h1,m1] = slot.startTime.split(':').map(Number);
-  const [h2,m2] = slot.endTime.split(':').map(Number);
-  return ((h2*60+m2) - (h1*60+m1)) / 60;
-}
-
+// ---------- COURT (equipment step) ----------
 function equipTotal(){
   return Object.entries(S.equipQty).reduce((sum,[id,qty]) => {
     const e = S.equipments.find(x => x.id === id);
@@ -511,15 +684,17 @@ function equipTotal(){
   }, 0);
 }
 
+function bookingTimes(){
+  const startTime = `${S.date}T${fmtHour(S.selHour)}:00`;
+  const end = S.selHour + S.selDuration;
+  const endTime = `${S.date}T${fmtHour(end)}:00`;
+  return { startTime, endTime };
+}
+
 function screenCourt(){
   const c = S.court;
-  const duration = S.slot ? slotDuration(S.slot) : 1;
-  const courtPrice = c.pricePerHour * duration;
+  const courtPrice = c.pricePerHour * S.selDuration;
   const total = courtPrice + equipTotal();
-
-  const slotChips = S.timeslots.length ? `<div class="chips">${S.timeslots.map(t => `
-      <div class="chip ${S.slot && S.slot.id===t.id ? 'selected':''}" onclick="pickSlot('${t.id}')">${fmtTimeSpan(t.startTime)}–${fmtTimeSpan(t.endTime)}</div>
-    `).join('')}</div>` : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum horário cadastrado — usando 1h a partir das 18:00.</p>`;
 
   const equipRows = S.equipments.length ? S.equipments.map(e => `
       <div class="equip-row">
@@ -535,39 +710,26 @@ function screenCourt(){
       </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento cadastrado.</p>`;
 
   return `
-    <div class="header-row">
-      <div class="icon-btn" onclick="go('home')">${icon('back')}</div>
-      <div class="eyebrow" style="margin:0;">Detalhes do campo</div>
-    </div>
-    <h2 style="font-size:26px;margin:0 0 8px;">${c.name}</h2>
+    ${backLink('home','Voltar')}
+    <div class="eyebrow">Campo ${c.name} · ${fmtHour(S.selHour)}</div>
+    <h2 style="font-size:26px;margin:0 0 8px;">Equipamento</h2>
     <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
 
-    <div class="field" style="margin-top:22px;">
-      <label>Data</label>
-      <input type="date" value="${S.date}" onchange="S.date=this.value">
-    </div>
-
-    <div class="field">
-      <label>Horário</label>
-      ${slotChips}
-    </div>
-
-    <div class="section">
-      <div class="section-label">Equipamentos (opcional)</div>
+    <div class="section" style="margin-top:18px;">
+      <div class="section-label">Adicionar equipamento (opcional)</div>
       ${equipRows}
     </div>
 
     <div class="section">
-      <div class="summary-row"><span>Quadra (${duration}h × ${fmtMoney(c.pricePerHour)})</span><span>${fmtMoney(courtPrice)}</span></div>
+      <div class="summary-row"><span>Quadra (${fmtDur(S.selDuration)} × ${fmtMoney(c.pricePerHour)})</span><span>${fmtMoney(courtPrice)}</span></div>
       <div class="summary-row"><span>Equipamentos</span><span>${fmtMoney(equipTotal())}</span></div>
       <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
     </div>
 
-    <button class="btn btn-primary" style="margin-top:8px;" onclick="submitBooking()">Reservar quadra</button>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="go('payment')">Ir para pagamento</button>
   `;
 }
 
-function pickSlot(id){ S.slot = S.timeslots.find(t => t.id === id); render(); }
 function stepEquip(id, delta){
   const cur = S.equipQty[id] || 0;
   const next = Math.max(0, cur + delta);
@@ -575,14 +737,59 @@ function stepEquip(id, delta){
   render();
 }
 
+// ---------- PAYMENT ----------
+function screenPayment(){
+  const c = S.court;
+  const { startTime, endTime } = bookingTimes();
+  const courtPrice = c.pricePerHour * S.selDuration;
+  const total = courtPrice + equipTotal();
+  const dateObj = new Date(S.date + 'T00:00:00');
+
+  const methods = [
+    { k:'mbway', i:'phone', n:'MB WAY', t:'Via telemóvel' },
+    { k:'card', i:'card', n:'Cartão de Crédito', t:'Visa, Mastercard, Amex' },
+    { k:'apple', i:'apple', n:'Apple Pay', t:'Autenticação Face ID' },
+  ];
+
+  return `
+    ${backLink('court','Cancelar')}
+    <div class="eyebrow">Reserva · ${c.name} — ${c.isIndoor?'Indoor':'Outdoor'}</div>
+    <h2 style="font-size:26px;margin:0 0 22px;">Pagamento</h2>
+
+    <div class="split">
+      <div class="col-a">
+        <div class="section" style="border-top:none;padding-top:0;">
+          <div class="summary-row"><span>Campo</span><span>${c.name}</span></div>
+          <div class="summary-row"><span>Tipo</span><span>${c.isIndoor?'Interior · Climatizado':'Exterior · Descoberto'}</span></div>
+          <div class="summary-row"><span>Data</span><span>${dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</span></div>
+          <div class="summary-row"><span>Horário</span><span>${fmtHour(S.selHour)} – ${fmtDur(S.selDuration)}</span></div>
+          <div class="summary-row"><span>Taxa de reserva</span><span>${fmtMoney(0)}</span></div>
+          <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
+        </div>
+        <div style="width:140px;color:var(--text-dim);margin-top:10px;">${courtDiagram()}</div>
+      </div>
+      <div class="col-b">
+        <div class="section-label">Método de pagamento</div>
+        ${methods.map(m => `
+          <div class="pay-option ${S.payMethod===m.k?'selected':''}" onclick="S.payMethod='${m.k}';render()">
+            <div class="icon-wrap">${icon(m.i)}</div>
+            <div class="info"><div class="n">${m.n}</div><div class="t">${m.t}</div></div>
+            ${S.payMethod===m.k ? `<div class="check">${icon('check')}</div>` : ''}
+          </div>
+        `).join('')}
+        <button class="btn btn-primary" style="margin-top:8px;" onclick="submitBooking()">Confirmar e Pagar · ${fmtMoney(total)}</button>
+        <p class="mono" style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:14px;text-transform:uppercase;letter-spacing:0.04em;">
+          Ambiente de teste — nenhuma cobrança real é feita, só a reserva é gravada
+        </p>
+      </div>
+    </div>
+  `;
+}
+
 async function submitBooking(){
   const c = S.court;
-  const duration = S.slot ? slotDuration(S.slot) : 1;
-  const startStr = S.slot ? S.slot.startTime : '18:00:00';
-  const endStr = S.slot ? S.slot.endTime : '19:00:00';
-  const startTime = `${S.date}T${startStr}`;
-  const endTime = `${S.date}T${endStr}`;
-  const courtPrice = c.pricePerHour * duration;
+  const { startTime, endTime } = bookingTimes();
+  const courtPrice = c.pricePerHour * S.selDuration;
   const total = courtPrice + equipTotal();
 
   try{
@@ -596,6 +803,7 @@ async function submitBooking(){
         equipmentId: equipId, quantity: qty, unitPrice: e.rentalPrice
       }});
     }
+    S.allBookings.push(created);
 
     toast('Reserva criada!', 'ok');
     await openBookingDetail(created.id);
@@ -659,44 +867,68 @@ function screenBookingDetail(){
     return `<div class="equip-row"><div class="name">${e?e.name:'Equipamento'} ×${be.quantity}</div><div class="mono">${fmtMoney(be.totalPrice)}</div></div>`;
   }).join('') : '';
 
+  const gamesList = S.bookingGames.length ? S.bookingGames.map(g => `
+    <div class="row-item" onclick="openGame('${g.id}')">
+      <div>
+        <h3>${g.name || 'Jogo'}</h3>
+        <div class="meta">${g.format === 'Singles' ? '1×1 Individual' : '2×2 Duplas'} · ${g.participants.length} jogador${g.participants.length===1?'':'es'}</div>
+      </div>
+      <span class="status-pill status-${g.status}">${g.status === 'Completed' && g.sets.length ? scoreLine(g) : g.status}</span>
+    </div>
+  `).join('') : `<div class="empty" style="padding:40px 20px;"><p class="mono" style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Sem jogos<br><span style="font-size:10px;">Use os botões para adicionar atividades</span></p></div>`;
+
   return `
+    ${backLink('mybookings','Voltar')}
     <div class="header-row">
-      <div class="icon-btn" onclick="go('mybookings')">${icon('back')}</div>
-      <div class="eyebrow" style="margin:0;flex:1;">Gestão da reserva</div>
+      <div class="eyebrow" style="margin:0;flex:1;">Reserva ativa · ${new Date(b.startTime).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
       <span class="status-pill status-${b.status}">${b.status}</span>
     </div>
-    <h2 style="font-size:26px;margin:0 0 4px;">${court ? court.name : 'Reserva'}</h2>
-    ${court ? `<span class="tag ${court.isIndoor?'tag-indoor':'tag-outdoor'}">${court.isIndoor?'Indoor':'Outdoor'}</span>` : ''}
+    <h2 style="font-size:26px;margin:0 0 22px;">Gestão da reserva</h2>
 
-    <div class="section" style="margin-top:18px;">
-      <div class="summary-row"><span>Data</span><span>${fmtDate(b.startTime)}</span></div>
-      <div class="summary-row"><span>Até</span><span>${fmtDate(b.endTime)}</span></div>
-      <div class="summary-row"><span>Preço da quadra</span><span>${fmtMoney(b.courtPrice)}</span></div>
-      ${equipRows}
-      <div class="summary-row total"><span>Total pago</span><span>${fmtMoney(b.totalPrice)}</span></div>
-    </div>
+    <div class="split">
+      <div class="col-a">
+        <div class="section-label">Detalhes do campo</div>
+        <h3 style="font-family:'Anton',sans-serif;text-transform:uppercase;font-size:20px;margin:0 0 4px;">${court ? court.name : 'Reserva'}</h3>
+        ${court ? `<div class="meta" style="margin-bottom:16px;">${court.isIndoor?'Interior · Climatizado':'Exterior · Descoberto'}</div>` : ''}
 
-    <div style="margin-top:18px;">
-      ${b.status === 'Pending' ? `
-        <button class="btn btn-primary" onclick="bookingAction('confirm')">Confirmar reserva</button>
-        <div style="height:10px;"></div>
-        <button class="btn btn-danger" onclick="bookingAction('cancel')">Cancelar reserva</button>
-      ` : ''}
-      ${b.status === 'Confirmed' ? `
-        ${S.bookingGames.length ? `<div class="section-label" style="margin-top:6px;">Jogos desta reserva</div>` : ''}
-        ${S.bookingGames.map(g => `
-          <div class="tile" onclick="openGame('${g.id}')">
+        <div class="summary-row"><span>Data</span><span>${fmtDate(b.startTime)}</span></div>
+        <div class="summary-row"><span>Até</span><span>${fmtDate(b.endTime)}</span></div>
+        <div class="summary-row"><span>Preço da quadra</span><span>${fmtMoney(b.courtPrice)}</span></div>
+        ${equipRows}
+        <div class="summary-row total"><span>Total pago</span><span>${fmtMoney(b.totalPrice)}</span></div>
+
+        <div style="width:140px;color:var(--text-dim);margin:16px 0;">${courtDiagram()}</div>
+
+        <div class="section-label">Adicionar à reserva</div>
+        ${b.status === 'Pending' ? `
+          <button class="btn btn-primary" onclick="bookingAction('confirm')">Confirmar reserva</button>
+          <div style="height:10px;"></div>
+          <button class="btn btn-danger" onclick="bookingAction('cancel')">Cancelar reserva</button>
+        ` : ''}
+        ${b.status === 'Confirmed' ? `
+          <div class="tile" onclick="openNewGame()">
             <div class="icon-wrap">${icon('trophy')}</div>
-            <div><div class="label">Jogo · ${fmtDate(g.scheduledAt)}</div><div class="sub">${g.status}</div></div>
+            <div><div class="label">Criar jogo</div><div class="sub">Organizar partida</div></div>
           </div>
-        `).join('')}
-        <div class="tile" onclick="createGameFromBooking()">
-          <div class="icon-wrap">${icon('plus')}</div>
-          <div><div class="label">Criar novo jogo</div><div class="sub">Organizar partida</div></div>
-        </div>
-      ` : ''}
+          <div class="tile" onclick="openEquipmentForBooking()">
+            <div class="icon-wrap">${icon('racket')}</div>
+            <div><div class="label">Equipamento</div><div class="sub">Raquetes, bolas, sapatilhas</div></div>
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="col-b">
+        <div class="section-label">Programação</div>
+        ${gamesList}
+      </div>
     </div>
   `;
+}
+
+function scoreLine(g){
+  const t1 = g.sets.filter(s => s.teamOneGames > s.teamTwoGames).length;
+  const t2 = g.sets.length - t1;
+  return `${t1} – ${t2}`;
 }
 
 async function bookingAction(action){
@@ -707,12 +939,193 @@ async function bookingAction(action){
   } catch(e){}
 }
 
-async function createGameFromBooking(){
+// ---------- ADD EQUIPMENT TO EXISTING BOOKING ----------
+function openEquipmentForBooking(){
+  S.addEquipQty = {};
+  go('addequip');
+}
+
+function addEquipTotal(){
+  return Object.entries(S.addEquipQty).reduce((sum,[id,qty]) => {
+    const e = S.equipments.find(x => x.id === id);
+    return sum + (e ? e.rentalPrice * qty : 0);
+  }, 0);
+}
+
+function stepAddEquip(id, delta){
+  const cur = S.addEquipQty[id] || 0;
+  const next = Math.max(0, cur + delta);
+  if (next === 0) delete S.addEquipQty[id]; else S.addEquipQty[id] = next;
+  render();
+}
+
+function screenAddEquipment(){
   const b = S.booking;
+  const court = S.courts.find(c => c.id === b.courtId);
+  const rows = S.equipments.length ? S.equipments.map(e => `
+      <div class="equip-row">
+        <div>
+          <div class="name">${e.name}</div>
+          <div class="sub">${fmtMoney(e.rentalPrice)} · estoque ${e.stock}</div>
+        </div>
+        <div class="stepper">
+          <button onclick="stepAddEquip('${e.id}',-1)">−</button>
+          <span class="qty">${S.addEquipQty[e.id]||0}</span>
+          <button onclick="stepAddEquip('${e.id}',1)">+</button>
+        </div>
+      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento cadastrado.</p>`;
+
+  return `
+    ${backLink('booking','Voltar')}
+    <div class="eyebrow">${court ? court.name : 'Reserva'} · ${fmtDate(b.startTime)}</div>
+    <h2 style="font-size:26px;margin:0 0 22px;">Equipamento</h2>
+
+    <div class="section" style="border-top:none;padding-top:0;">
+      ${rows}
+    </div>
+
+    <div class="section">
+      <div class="summary-row total"><span>Total a adicionar</span><span>${fmtMoney(addEquipTotal())}</span></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitAddEquipment()">Adicionar à reserva</button>
+  `;
+}
+
+async function submitAddEquipment(){
+  const entries = Object.entries(S.addEquipQty);
+  if (!entries.length){ toast('Escolha ao menos um item', 'error'); return; }
+  try{
+    for (const [equipId, qty] of entries){
+      const e = S.equipments.find(x => x.id === equipId);
+      await api(API.booking, `/api/bookings/${S.booking.id}/equipments`, { method:'POST', body:{
+        equipmentId: equipId, quantity: qty, unitPrice: e.rentalPrice
+      }});
+    }
+    toast('Equipamento adicionado!', 'ok');
+    await openBookingDetail(S.booking.id);
+  } catch(e){}
+}
+
+// ---------- NEW GAME ----------
+function openNewGame(){
+  S.newGame = {
+    bookingId: S.booking.id, courtId: S.booking.courtId, scheduledAt: S.booking.startTime,
+    name: 'Jogo Amigável', format: 'Doubles',
+    players: [{ userId: S.userId, team: 1 }],
+    searchResults: [],
+  };
+  go('newgame');
+}
+
+function maxPerTeam(){ return S.newGame.format === 'Singles' ? 1 : 2; }
+
+function screenNewGame(){
+  const ng = S.newGame;
+  const cap = maxPerTeam();
+  const court = S.courts.find(c => c.id === ng.courtId);
+
+  const playerChips = ng.players.map(p => `
+    <div class="chip chip-removable ${p.userId===S.userId?'selected':''}">
+      ${p.userId===S.userId ? '⚡ Eu' : nameFor(p.userId)}
+      ${p.userId!==S.userId ? `<button onclick="removeStagedPlayer('${p.userId}')">×</button>` : ''}
+    </div>
+  `).join('');
+
+  const resultsHtml = (ng.searchResults||[]).length ? ng.searchResults.map(u => {
+    const already = ng.players.some(p => p.userId === u.id);
+    const full = ng.players.length >= cap*2;
+    return `
+      <div class="invite-row">
+        <div class="avatar" style="width:32px;height:32px;font-size:12px;">${(u.fullName||u.email||'?')[0].toUpperCase()}</div>
+        <div class="info"><div class="n">${u.fullName || u.email}</div><div class="t">Membro CourtMatch</div></div>
+        <button class="btn btn-ghost btn-sm" ${already||full?'disabled':''} onclick="addStagedPlayer('${u.id}','${(u.fullName||u.email).replace(/'/g,"")}')">${already?'Adicionado':'+ Convidar'}</button>
+      </div>`;
+  }).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>`;
+
+  return `
+    ${backLink('booking','Voltar')}
+    <div class="eyebrow">${court ? court.name : ''} · ${fmtDate(ng.scheduledAt)}</div>
+    <h2 style="font-size:26px;margin:0 0 22px;">Novo jogo</h2>
+
+    <div class="split">
+      <div class="col-a">
+        <div class="field"><label>Nome do jogo</label><input id="ng-name" type="text" value="${ng.name}" onchange="S.newGame.name=this.value"></div>
+
+        <div class="section-label">Formato de jogo</div>
+        <div class="format-grid" style="margin-bottom:20px;">
+          <div class="format-tile ${ng.format==='Doubles'?'selected':''}" onclick="setGameFormat('Doubles')">
+            <div class="big">2×2</div><div class="sub">Duplas</div>
+          </div>
+          <div class="format-tile ${ng.format==='Singles'?'selected':''}" onclick="setGameFormat('Singles')">
+            <div class="big">1×1</div><div class="sub">Individual</div>
+          </div>
+        </div>
+
+        <div class="section-label">Jogadores adicionados (${ng.players.length})</div>
+        <div class="chips" style="margin-bottom:20px;">${playerChips}</div>
+
+        <button class="btn btn-primary" onclick="saveNewGame()">Guardar jogo</button>
+      </div>
+
+      <div class="col-b">
+        <div class="section-label">Convidar jogadores</div>
+        <div class="field"><input type="text" placeholder="Buscar por nome ou e-mail..." oninput="onNewGameSearch(this.value)"></div>
+        <div id="ng-results">${resultsHtml}</div>
+      </div>
+    </div>
+  `;
+}
+
+function setGameFormat(fmt){
+  S.newGame.format = fmt;
+  const cap = maxPerTeam();
+  // trim players beyond the new cap per team, keeping self
+  const byTeam = { 1: [], 2: [] };
+  S.newGame.players.forEach(p => byTeam[p.team].push(p));
+  S.newGame.players = [...byTeam[1].slice(0,cap), ...byTeam[2].slice(0,cap)];
+  render();
+}
+
+let ngSearchTimer = null;
+function onNewGameSearch(term){
+  clearTimeout(ngSearchTimer);
+  ngSearchTimer = setTimeout(() => doNewGameSearch(term), 300);
+}
+async function doNewGameSearch(term){
+  term = (term||'').trim();
+  if (!term){ S.newGame.searchResults = []; document.getElementById('ng-results').innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>'; return; }
+  try{
+    const res = await fetch(API.identity + '/api/auth/users?search=' + encodeURIComponent(term) + '&limit=15');
+    const users = res.ok ? await res.json() : [];
+    S.newGame.searchResults = users.filter(u => u.id !== S.userId);
+    render();
+  } catch(e){}
+}
+
+function addStagedPlayer(id, name){
+  const cap = maxPerTeam();
+  const byTeam = { 1: 0, 2: 0 };
+  S.newGame.players.forEach(p => byTeam[p.team]++);
+  let team = byTeam[2] < cap ? 2 : (byTeam[1] < cap ? 1 : null);
+  if (!team){ toast('As equipas já estão completas para este formato', 'error'); return; }
+  S.newGame.players.push({ userId: id, team });
+  S.userNames[id] = name;
+  render();
+}
+
+function removeStagedPlayer(id){
+  S.newGame.players = S.newGame.players.filter(p => p.userId !== id);
+  render();
+}
+
+async function saveNewGame(){
+  const ng = S.newGame;
   try{
     S.game = await api(API.game, '/api/games', { method:'POST', body:{
-      bookingId: b.id, facilityId: b.courtId, scheduledAt: b.startTime,
-      participants: [{ userId: S.userId, teamNumber: 1 }]
+      bookingId: ng.bookingId, facilityId: ng.courtId, scheduledAt: ng.scheduledAt,
+      name: ng.name, format: ng.format,
+      participants: ng.players.map(p => ({ userId: p.userId, teamNumber: p.team }))
     }});
     S.bookingGames.push(S.game);
     toast('Jogo criado!', 'ok');
@@ -746,53 +1159,54 @@ function screenGame(){
   `).join('') : '';
 
   return `
+    ${backLink('booking','Voltar')}
     <div class="header-row">
-      <div class="icon-btn" onclick="go('booking')">${icon('back')}</div>
-      <div class="eyebrow" style="margin:0;flex:1;">Partida</div>
+      <div class="eyebrow" style="margin:0;flex:1;">${g.format === 'Singles' ? '1×1 Individual' : '2×2 Duplas'}</div>
       <span class="status-pill status-${g.status}">${g.status}</span>
     </div>
-    <h2 style="font-size:26px;margin:0 0 6px;">Jogo</h2>
+    <h2 style="font-size:26px;margin:0 0 22px;">${g.name || 'Jogo'}</h2>
 
-    ${teams}
-
-    ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
-      <div class="section">
-        <div class="section-label">Convidar jogador</div>
-        <div class="field" style="margin-bottom:10px;">
-          <label>Buscar por nome ou e-mail</label>
-          <input type="text" placeholder="Digite para buscar..." oninput="onInviteSearchInput(this.value)">
-        </div>
-        <div class="field" style="margin-bottom:10px;">
-          <label>Selecionar jogador</label>
-          <select id="invite-user-select"><option value="">Digite acima para buscar...</option></select>
-        </div>
-        <div class="chips" style="margin-bottom:14px;">
-          <div class="chip ${S.inviteTeam===1?'selected':''}" onclick="S.inviteTeam=1;render()">Equipa A</div>
-          <div class="chip ${S.inviteTeam===2?'selected':''}" onclick="S.inviteTeam=2;render()">Equipa B</div>
-        </div>
-        <button class="btn btn-ghost" onclick="invitePlayer()">Enviar convite</button>
+    <div class="split">
+      <div class="col-a">
+        ${teams}
       </div>
-    ` : ''}
-
-    ${setsRows ? `<div class="section"><div class="section-label">Placar</div>${setsRows}</div>` : ''}
-
-    ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
-      <div class="section">
-        <div class="section-label">Registrar resultado</div>
-        ${S.sets.map((s,i) => `
-          <div class="set-row">
-            <span style="width:40px;">Set ${s.setNumber}</span>
-            <input type="number" min="0" value="${s.teamOneGames}" onchange="S.sets[${i}].teamOneGames=+this.value">
-            <span>×</span>
-            <input type="number" min="0" value="${s.teamTwoGames}" onchange="S.sets[${i}].teamTwoGames=+this.value">
+      <div class="col-b">
+        ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
+          <div class="section" style="border-top:none;padding-top:0;">
+            <div class="section-label">Convidar jogador</div>
+            <div class="field" style="margin-bottom:10px;">
+              <label>Buscar por nome ou e-mail</label>
+              <input type="text" placeholder="Digite para buscar..." oninput="onInviteSearchInput(this.value)">
+            </div>
+            <div id="invite-results"><p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p></div>
+            <div class="chips" style="margin:12px 0 14px;">
+              <div class="chip ${S.inviteTeam===1?'selected':''}" onclick="S.inviteTeam=1;render()">Equipa A</div>
+              <div class="chip ${S.inviteTeam===2?'selected':''}" onclick="S.inviteTeam=2;render()">Equipa B</div>
+            </div>
           </div>
-        `).join('')}
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="addSet()">+ Set</button>
-          <button class="btn btn-primary btn-sm" style="flex:1;" onclick="registerResult()">Salvar resultado</button>
-        </div>
+        ` : ''}
+
+        ${setsRows ? `<div class="section"><div class="section-label">Placar</div>${setsRows}</div>` : ''}
+
+        ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
+          <div class="section">
+            <div class="section-label">Registrar resultado</div>
+            ${S.sets.map((s,i) => `
+              <div class="set-row">
+                <span style="width:40px;">Set ${s.setNumber}</span>
+                <input type="number" min="0" value="${s.teamOneGames}" onchange="S.sets[${i}].teamOneGames=+this.value">
+                <span>×</span>
+                <input type="number" min="0" value="${s.teamTwoGames}" onchange="S.sets[${i}].teamTwoGames=+this.value">
+              </div>
+            `).join('')}
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-ghost btn-sm" onclick="addSet()">+ Set</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="registerResult()">Salvar resultado</button>
+            </div>
+          </div>
+        ` : ''}
       </div>
-    ` : ''}
+    </div>
   `;
 }
 
@@ -803,26 +1217,29 @@ function onInviteSearchInput(term){
 }
 
 async function doInviteSearch(term){
-  const selectEl = document.getElementById('invite-user-select');
-  if (!selectEl) return;
+  const el = document.getElementById('invite-results');
+  if (!el) return;
   term = (term || '').trim();
-  if (!term){ selectEl.innerHTML = '<option value="">Digite acima para buscar...</option>'; return; }
-  selectEl.innerHTML = '<option value="">Buscando...</option>';
+  if (!term){ el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Busque pelo nome ou e-mail do jogador.</p>'; return; }
+  el.innerHTML = '<p class="mono" style="color:var(--text-dim);font-size:11px;">Buscando...</p>';
   try{
     const res = await fetch(API.identity + '/api/auth/users?search=' + encodeURIComponent(term) + '&limit=15');
     const users = res.ok ? await res.json() : [];
-    const filtered = users.filter(u => u.id !== S.userId);
-    selectEl.innerHTML = filtered.length
-      ? filtered.map(u => `<option value="${u.id}">${u.fullName || u.email}${u.fullName ? ' — ' + u.email : ''}</option>`).join('')
-      : '<option value="">Nenhum jogador encontrado</option>';
+    const filtered = users.filter(u => u.id !== S.userId && !S.game.participants.some(p => p.userId === u.id));
+    el.innerHTML = filtered.length
+      ? filtered.map(u => `
+          <div class="invite-row">
+            <div class="avatar" style="width:32px;height:32px;font-size:12px;">${(u.fullName||u.email||'?')[0].toUpperCase()}</div>
+            <div class="info"><div class="n">${u.fullName || u.email}</div><div class="t">Membro CourtMatch</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="invitePlayer('${u.id}')">+ Convidar</button>
+          </div>`).join('')
+      : '<p class="mono" style="color:var(--text-dim);font-size:11px;">Nenhum jogador encontrado.</p>';
   } catch(e){
-    selectEl.innerHTML = '<option value="">Erro ao buscar</option>';
+    el.innerHTML = '<p class="mono" style="color:var(--clay);font-size:11px;">Erro ao buscar.</p>';
   }
 }
 
-async function invitePlayer(){
-  const userId = document.getElementById('invite-user-select').value;
-  if (!userId){ toast('Busque e selecione um jogador', 'error'); return; }
+async function invitePlayer(userId){
   try{
     S.game = await api(API.game, `/api/games/${S.game.id}/invite`, { method:'POST', body:{ userId, teamNumber: S.inviteTeam } });
     await resolveUserNames([userId]);
@@ -898,6 +1315,8 @@ function setBalance(g, myTeam){
   return [won,lost];
 }
 
+function notReady(){ toast('Em breve — ainda não existe na API', 'ok'); }
+
 function screenProfile(){
   const completed = S.gameHistory.filter(g => g.status === 'Completed');
   const wins = completed.filter(g => {
@@ -917,7 +1336,7 @@ function screenProfile(){
     return `
       <div class="row-item" style="cursor:default;" onclick="event.stopPropagation()">
         <div>
-          <h3>${court ? court.name : 'Jogo'}</h3>
+          <h3>${g.name || court?.name || 'Jogo'}</h3>
           <div class="meta">${new Date(g.scheduledAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})}</div>
         </div>
         <div style="text-align:right;">
@@ -931,28 +1350,64 @@ function screenProfile(){
     <div class="eyebrow">Membro · Nº ${S.userId ? S.userId.slice(0,4).toUpperCase() : '----'}</div>
     <h2 style="font-size:24px;margin:0 0 22px;">Perfil</h2>
 
-    <div class="section" style="border-top:2px solid var(--gold);padding-top:18px;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-        <div class="avatar" style="width:52px;height:52px;font-size:20px;">${displayName()[0].toUpperCase()}</div>
-        <div style="min-width:0;">
-          <h3 style="font-family:'Anton',sans-serif;text-transform:uppercase;font-size:16px;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName()}</h3>
-          <div class="meta" style="margin-bottom:4px;">${S.email||''}</div>
-          <div class="meta">${rankPos >= 0 ? `#${rankPos+1} no ranking` : 'Sem posição no ranking'}</div>
+    <div class="split">
+      <div class="col-a">
+        <div class="section" style="border-top:2px solid var(--gold);padding-top:18px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div class="avatar" style="width:52px;height:52px;font-size:20px;">${displayName()[0].toUpperCase()}</div>
+            <div style="min-width:0;">
+              <h3 style="font-family:'Anton',sans-serif;text-transform:uppercase;font-size:16px;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName()}</h3>
+              <div class="meta" style="margin-bottom:4px;">${S.email||''}</div>
+              <div class="meta">${rankPos >= 0 ? `#${rankPos+1} no ranking` : 'Sem posição no ranking'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:24px;">
+            <div><div class="price-tag" style="text-align:left;">${played}</div><div class="meta">Partidas</div></div>
+            <div><div class="price-tag" style="text-align:left;">${wins}</div><div class="meta">Vitórias</div></div>
+            <div><div class="price-tag" style="text-align:left;">${winRate}%</div><div class="meta">Taxa de vitória</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Atividade recente</div>
+          ${activity}
         </div>
       </div>
-      <div style="display:flex;gap:24px;">
-        <div><div class="price-tag" style="text-align:left;">${played}</div><div class="meta">Partidas</div></div>
-        <div><div class="price-tag" style="text-align:left;">${wins}</div><div class="meta">Vitórias</div></div>
-        <div><div class="price-tag" style="text-align:left;">${winRate}%</div><div class="meta">Taxa de vitória</div></div>
+
+      <div class="col-b">
+        <div class="section-label">Conta</div>
+        <button class="settings-row" onclick="notReady()">
+          <div class="icon-wrap">${icon('edit')}</div>
+          <div class="info"><div class="n">Editar Perfil</div><div class="t">Nome, fotografia, contacto</div></div>
+          <div class="chev">${icon('chevron')}</div>
+        </button>
+        <button class="settings-row" onclick="notReady()">
+          <div class="icon-wrap">${icon('shield')}</div>
+          <div class="info"><div class="n">Privacidade</div><div class="t">Visibilidade e dados</div></div>
+          <div class="chev">${icon('chevron')}</div>
+        </button>
+        <button class="settings-row" onclick="notReady()">
+          <div class="icon-wrap">${icon('bell')}</div>
+          <div class="info"><div class="n">Notificações</div><div class="t">Reservas, jogos, convites</div></div>
+          <div class="chev">${icon('chevron')}</div>
+        </button>
+
+        <div class="section-label" style="margin-top:22px;">Pagamentos</div>
+        <button class="settings-row" onclick="notReady()">
+          <div class="icon-wrap">${icon('card')}</div>
+          <div class="info"><div class="n">Métodos de Pagamento</div><div class="t">Cartões e carteiras digitais</div></div>
+          <div class="chev">${icon('chevron')}</div>
+        </button>
+        <button class="settings-row" onclick="notReady()">
+          <div class="icon-wrap">${icon('receipt')}</div>
+          <div class="info"><div class="n">Histórico de Faturas</div><div class="t">Reservas e alugueres</div></div>
+          <div class="chev">${icon('chevron')}</div>
+        </button>
+
+        <div class="section-label" style="margin-top:22px;">Sessão</div>
+        <button class="btn btn-danger" onclick="logout()">Terminar sessão</button>
       </div>
     </div>
-
-    <div class="section">
-      <div class="section-label">Atividade recente</div>
-      ${activity}
-    </div>
-
-    <button class="btn btn-danger" style="margin-top:8px;" onclick="logout()">Terminar sessão</button>
   `;
 }
 
@@ -999,7 +1454,7 @@ async function navTo(view){
   go(view);
 }
 
-const authedViews = ['home','court','mybookings','booking','game','ranking','profile'];
+const authedViews = ['home','court','payment','mybookings','booking','addequip','newgame','game','ranking','profile'];
 
 async function render(){
   const screenEl = document.getElementById('screen');
@@ -1010,8 +1465,11 @@ async function render(){
     auth: screenAuth,
     home: screenHome,
     court: screenCourt,
+    payment: screenPayment,
     mybookings: screenMyBookings,
     booking: screenBookingDetail,
+    addequip: screenAddEquipment,
+    newgame: screenNewGame,
     game: screenGame,
     ranking: screenRanking,
     profile: screenProfile,

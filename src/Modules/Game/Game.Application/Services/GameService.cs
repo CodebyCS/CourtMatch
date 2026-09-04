@@ -18,7 +18,10 @@ public class GameService : IGameService
 
     public async Task<GameDto> CreateGameAsync(CreateGameDto dto, CancellationToken ct = default)
     {
-        var game = new Domain.Entities.Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt);
+        var format = Enum.TryParse<Game.Domain.Entities.Enums.GameFormat>(dto.Format, true, out var parsed)
+            ? parsed
+            : Game.Domain.Entities.Enums.GameFormat.Doubles;
+        var game = new Domain.Entities.Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt, dto.Name ?? "", format);
 
         foreach (var participant in dto.Participants)
             game.InvitePlayer(participant.UserId, participant.TeamNumber);
@@ -135,6 +138,8 @@ public class GameService : IGameService
         game.Id,
         game.BookingId,
         game.FacilityId,
+        game.Name,
+        game.Format.ToString(),
         game.ScheduledAt,
         game.Status.ToString(),
         game.WinningTeam,

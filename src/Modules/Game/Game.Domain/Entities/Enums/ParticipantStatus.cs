@@ -6,3 +6,9 @@ public enum ParticipantStatus
     Confirmed,
     Declined
 }
+
+public enum GameFormat
+{
+    Singles, // 1x1
+    Doubles  // 2x2
+}

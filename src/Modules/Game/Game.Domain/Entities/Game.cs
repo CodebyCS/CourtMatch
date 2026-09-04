@@ -13,6 +13,8 @@ public class Game
     public Guid Id { get; private set; }
     public Guid BookingId { get; private set; }   // referência à reserva no Ordering.API
     public Guid FacilityId { get; private set; }  // referência ao campo no Catalog.API
+    public string Name { get; private set; } = string.Empty;
+    public GameFormat Format { get; private set; }
     public DateTime ScheduledAt { get; private set; }
     public GameStatus Status { get; private set; }
     public int? WinningTeam { get; private set; } // 1 ou 2, definido após RegisterResult
@@ -27,12 +29,14 @@ public class Game
 
     protected Game() { } // EF Core
 
-    public Game(Guid bookingId, Guid facilityId, DateTime scheduledAt)
+    public Game(Guid bookingId, Guid facilityId, DateTime scheduledAt, string name = "", GameFormat format = GameFormat.Doubles)
     {
         Id = Guid.NewGuid();
         BookingId = bookingId;
         FacilityId = facilityId;
         ScheduledAt = scheduledAt;
+        Name = string.IsNullOrWhiteSpace(name) ? "Jogo" : name;
+        Format = format;
         Status = GameStatus.PendingConfirmation;
         CreatedAt = DateTime.UtcNow;
     }
@@ -52,9 +56,10 @@ public class Game
             throw new InvalidOperationException(
                 $"O jogador com o Id '{userId}' já participa neste jogo.");
 
-        if (_participants.Count(p => p.TeamNumber == teamNumber) >= 2)
+        var maxPerTeam = Format == GameFormat.Singles ? 1 : 2;
+        if (_participants.Count(p => p.TeamNumber == teamNumber) >= maxPerTeam)
             throw new InvalidOperationException(
-                $"A equipa {teamNumber} já tem o número máximo de jogadores (2).");
+                $"A equipa {teamNumber} já tem o número máximo de jogadores ({maxPerTeam}).");
 
         var participant = new GameParticipant(Id, userId, teamNumber);
         _participants.Add(participant);
@@ -68,7 +73,7 @@ public class Game
 
         participant.Confirm();
 
-        var minimoJogadores = 2; // permite singles (1v1); para pares, o serviço pode validar 4
+        var minimoJogadores = Format == GameFormat.Singles ? 2 : 4;
 
         if (_participants.Count >= minimoJogadores &&
             _participants.All(p => p.Status == ParticipantStatus.Confirmed))

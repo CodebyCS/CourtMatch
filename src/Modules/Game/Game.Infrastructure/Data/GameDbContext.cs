@@ -21,6 +21,8 @@ public class GameDbContext : DbContext
             entity.ToTable("games");
             entity.HasKey(g => g.Id);
             entity.Property(g => g.Status).HasConversion<string>().HasMaxLength(30);
+            entity.Property(g => g.Format).HasConversion<string>().HasMaxLength(20);
+            entity.Property(g => g.Name).HasMaxLength(100);
             entity.HasIndex(g => g.BookingId); // not unique: a booking can have more than one game
 
             entity.HasMany(g => g.Participants)
