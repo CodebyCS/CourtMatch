@@ -21,7 +21,7 @@ namespace Identity.API
             builder.Services.AddSingleton(TimeProvider.System);
 
             // Config. Identity for to use with Controllers
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<Identity.API.Data.ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;

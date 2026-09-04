@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CourtMatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1d10;
+    --text:#ede6d2;
+    --text-dim:#8b9a80;
+    --gold:#c8a94a;
+    --gold-soft:rgba(200,169,74,0.14);
+    --clay:#d0714e;
+    --clay-soft:rgba(208,113,78,0.14);
+    --line:rgba(237,230,210,0.14);
+    --line-strong:rgba(237,230,210,0.28);
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#050b06;
+    color:var(--text);
+    font-family:'Outfit',sans-serif;
+    display:flex;
+    justify-content:center;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    letter-spacing:0.01em;
+    text-transform:uppercase;
+    line-height:1.05;
+  }
+  .mono{ font-family:'Roboto Mono',monospace; }
+  .eyebrow{
+    font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.12em; margin:0 0 6px;
+  }
+  #shell{ display:flex; justify-content:center; width:100%; min-height:100vh; }
+  #sidebar{ display:none; }
+  #phone{
+    width:430px;
+    max-width:100vw;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  @media (min-width:431px){
+    body{ padding:24px 0; }
+    #phone{ min-height:900px; height:900px; border-radius:6px; box-shadow:0 30px 80px rgba(0,0,0,.6); border:1px solid rgba(237,230,210,0.08); }
+  }
+  #screen{
+    flex:1;
+    overflow-y:auto;
+    padding:22px 20px 100px;
+    -webkit-overflow-scrolling:touch;
+  }
+  #screen::-webkit-scrollbar{ width:0; }
+
+  @media (min-width:900px){
+    body{ padding:0; }
+    #shell{ justify-content:stretch; align-items:stretch; }
+    #sidebar{
+      display:flex; flex-direction:column; width:264px; flex-shrink:0;
+      padding:28px 20px; border-right:1px solid var(--line);
+      background:var(--bg); position:sticky; top:0; height:100vh;
+    }
+    #phone{ width:auto; flex:1; max-width:none; height:auto; min-height:100vh; border-radius:0; box-shadow:none; border:none; }
+    #screen{ padding:44px 56px 60px; max-width:820px; }
+    #nav-slot{ display:none; }
+  }
+
+  .sb-nav{ display:flex; flex-direction:column; gap:2px; margin-top:26px; }
+  .sb-nav-item{
+    display:flex; align-items:center; gap:11px; padding:11px 12px;
+    border-left:2px solid transparent; cursor:pointer; background:none; border-top:none; border-right:none; border-bottom:none;
+    color:var(--text-dim); font-family:'Roboto Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.06em;
+    text-align:left; width:100%;
+  }
+  .sb-nav-item svg{ width:16px; height:16px; stroke:currentColor; fill:none; flex-shrink:0; }
+  .sb-nav-item.active{ border-left-color:var(--gold); color:var(--gold); background:var(--gold-soft); }
+  .sb-section-label{ font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-top:8px; }
+  .sb-user{
+    display:flex; align-items:center; gap:10px; padding:12px; margin-top:auto;
+    border-top:1px solid var(--line); cursor:pointer; background:none; border-left:none; border-right:none; border-bottom:none; width:100%; text-align:left;
+  }
+  .sb-user .info{ flex:1; min-width:0; }
+  .sb-user .info .n{ font-weight:700; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-user .info .t{ font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; }
+
+  .header-block{ margin-bottom:22px; }
+  .header-row{ display:flex; align-items:center; gap:12px; margin-bottom:2px; }
+  .header-row h2{ font-size:26px; margin:0; flex:1; }
+  .icon-btn{
+    width:36px; height:36px; border-radius:var(--radius);
+    background:transparent; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+  }
+  .icon-btn:active{ border-color:var(--gold); }
+  .icon-btn svg{ width:17px; height:17px; stroke:var(--text); }
+
+  .logo{ display:flex; align-items:center; gap:10px; }
+  .logo .bar{ width:3px; height:26px; background:var(--gold); flex-shrink:0; }
+  .logo-text span{ display:block; }
+  .logo-text .name{ font-family:'Anton',sans-serif; font-size:19px; letter-spacing:0.01em; text-transform:uppercase; }
+  .logo-text .tagline{ font-family:'Roboto Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:0.14em; text-transform:uppercase; }
+
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:15px; border-radius:var(--radius); border:1px solid transparent;
+    font-family:'Roboto Mono',monospace; font-weight:700; font-size:13px;
+    letter-spacing:0.06em; text-transform:uppercase; cursor:pointer;
+  }
+  .btn-primary{ background:var(--gold); color:#141008; }
+  .btn-primary:active{ transform:scale(0.98); }
+  .btn-primary:disabled{ opacity:0.4; }
+  .btn-ghost{ background:transparent; color:var(--text); border-color:var(--line-strong); }
+  .btn-danger{ background:transparent; color:var(--clay); border-color:rgba(208,113,78,0.4); }
+  .btn-sm{ padding:11px 14px; font-size:11px; width:auto; }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--text-dim); margin-bottom:7px; text-transform:uppercase; letter-spacing:0.1em; }
+  .field input, .field select{
+    width:100%; background:transparent; border:1px solid var(--line-strong);
+    color:var(--text); padding:13px; border-radius:var(--radius); font-size:14.5px; font-family:'Outfit',sans-serif;
+  }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--gold); }
+  .field input::placeholder{ color:var(--text-dim); }
+
+  .section{ padding:16px 0; border-top:1px solid var(--line); }
+  .section:first-child{ border-top:none; }
+  .section-label{ font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px; }
+
+  .row-item{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+  .row-item:last-child{ border-bottom:none; }
+  .row-item:active{ background:rgba(237,230,210,0.03); }
+  .row-item h3{ font-family:'Outfit',sans-serif; font-weight:700; text-transform:none; font-size:16px; margin:0 0 6px; letter-spacing:0; }
+  .row-item .meta{ font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; }
+
+  .tag{
+    display:inline-flex; align-items:center; padding:3px 8px; border-radius:var(--radius);
+    font-family:'Roboto Mono',monospace; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
+    border:1px solid currentColor;
+  }
+  .tag-indoor{ color:var(--gold); }
+  .tag-outdoor{ color:var(--text-dim); }
+
+  .price-tag{ font-family:'Anton',sans-serif; font-size:19px; color:var(--gold); white-space:nowrap; text-align:right; }
+  .price-tag small{ display:block; font-family:'Roboto Mono',monospace; font-size:9.5px; color:var(--text-dim); text-transform:uppercase; font-weight:400; letter-spacing:0.08em; }
+
+  .status-pill{ padding:3px 9px; border-radius:var(--radius); font-family:'Roboto Mono',monospace; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; border:1px solid currentColor; }
+  .status-Pending, .status-PendingConfirmation, .status-Invited{ color:var(--text-dim); }
+  .status-Confirmed{ color:var(--gold); }
+  .status-Cancelled, .status-Declined{ color:var(--clay); }
+  .status-InProgress{ color:var(--gold); }
+  .status-Completed{ color:var(--text-dim); }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    padding:10px 14px; border-radius:var(--radius); background:transparent; border:1px solid var(--line-strong);
+    font-family:'Roboto Mono',monospace; font-size:12.5px; font-weight:500; cursor:pointer; color:var(--text);
+  }
+  .chip.selected{ background:var(--gold); color:#141008; border-color:var(--gold); font-weight:700; }
+
+  .stepper{ display:flex; align-items:center; gap:10px; }
+  .stepper button{
+    width:28px; height:28px; border-radius:var(--radius); border:1px solid var(--line-strong);
+    background:transparent; color:var(--text); font-size:15px; font-weight:700; cursor:pointer;
+  }
+  .stepper button:active{ border-color:var(--gold); color:var(--gold); }
+  .stepper .qty{ min-width:16px; text-align:center; font-family:'Roboto Mono',monospace; font-weight:700; }
+
+  .equip-row{ display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); }
+  .equip-row:last-child{ border-bottom:none; }
+  .equip-row .name{ font-weight:600; font-size:14px; }
+  .equip-row .sub{ font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-top:3px; }
+
+  .summary-row{ display:flex; justify-content:space-between; font-size:13px; color:var(--text-dim); padding:6px 0; }
+  .summary-row.total{ color:var(--gold); font-family:'Anton',sans-serif; font-size:18px; padding-top:14px; margin-top:6px; border-top:2px solid var(--gold); }
+
+  .tile{
+    display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--gold); border-radius:var(--radius);
+    cursor:pointer; margin-bottom:10px; background:transparent;
+  }
+  .tile:active{ background:var(--gold-soft); }
+  .tile .icon-wrap{ width:34px; height:34px; border:1px solid var(--gold); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .tile .icon-wrap svg{ width:17px; height:17px; stroke:var(--gold); }
+  .tile .label{ font-family:'Anton',sans-serif; font-size:14px; letter-spacing:0.02em; }
+  .tile .sub{ font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+
+  .bottom-nav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex; background:rgba(5,11,6,0.94); backdrop-filter:blur(12px);
+    border-top:1px solid var(--line); padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+  }
+  .nav-item{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:5px;
+    background:none; border:none; border-top:2px solid transparent; color:var(--text-dim); cursor:pointer; padding:6px;
+  }
+  .nav-item svg{ width:19px; height:19px; stroke:currentColor; fill:none; }
+  .nav-item span{ font-family:'Roboto Mono',monospace; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+  .nav-item.active{ color:var(--gold); border-top-color:var(--gold); }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--text-dim); }
+  .empty svg{ width:36px; height:36px; stroke:var(--text-dim); margin-bottom:14px; }
+  .empty p{ font-size:13px; margin:0; }
+
+  .toast-wrap{ position:absolute; top:16px; left:16px; right:16px; z-index:50; display:flex; flex-direction:column; gap:8px; }
+  .toast{
+    padding:12px 16px; border-radius:var(--radius); font-family:'Roboto Mono',monospace; font-size:12px; font-weight:500;
+    background:#0b1d10; border:1px solid var(--line-strong); box-shadow:0 8px 24px rgba(0,0,0,.5);
+    animation:slidein .2s ease;
+  }
+  .toast.error{ border-color:var(--clay); color:#f0a98d; }
+  .toast.ok{ border-color:var(--gold); color:var(--gold); }
+  @keyframes slidein{ from{ opacity:0; transform:translateY(-8px);} to{ opacity:1; transform:translateY(0);} }
+
+  .tabs{ display:flex; gap:0; border-bottom:1px solid var(--line); margin-bottom:22px; }
+  .tab{ flex:1; text-align:center; padding:12px; font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; color:var(--text-dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tab.active{ color:var(--gold); border-bottom-color:var(--gold); }
+
+  .avatar{ width:36px; height:36px; border-radius:var(--radius); background:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Anton',sans-serif; font-size:14px; color:#141008; }
+
+  .rank-row{ display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid var(--line); }
+  .rank-row:last-child{ border-bottom:none; }
+  .rank-num{ width:22px; font-family:'Anton',sans-serif; font-size:15px; color:var(--text-dim); text-align:center; flex-shrink:0; }
+  .rank-num.top1{ color:var(--gold); }
+  .rank-info{ flex:1; min-width:0; }
+  .rank-uid{ font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank-sub{ font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+  .rank-pts{ font-family:'Anton',sans-serif; font-size:17px; color:var(--gold); }
+
+  .set-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .set-row input{ width:100%; text-align:center; }
+  .set-row span{ font-family:'Roboto Mono',monospace; color:var(--text-dim); font-size:11px; }
+
+  .loader{ display:flex; justify-content:center; padding:40px; }
+  .loader .dot{ width:6px; height:6px; background:var(--gold); margin:0 3px; animation:bounce 1s infinite; display:inline-block; }
+  .loader .dot:nth-child(2){ animation-delay:.15s; }
+  .loader .dot:nth-child(3){ animation-delay:.3s; }
+  @keyframes bounce{ 0%,80%,100%{ transform:translateY(0);} 40%{ transform:translateY(-6px);} }
+
+  a{ color:var(--gold); }
+</style>
+</head>
+<body>
+<div id="shell">
+  <aside id="sidebar"></aside>
+  <div id="phone">
+    <div id="toast-wrap" class="toast-wrap"></div>
+    <div id="screen"></div>
+    <div id="nav-slot"></div>
+  </div>
+</div>
+
+<script>
+const API = {
+  booking:  "http://localhost:5058",
+  catalog:  "http://localhost:5103",
+  game:     "http://localhost:5021",
+  identity: "http://localhost:5257",
+};
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); } catch(e){} },
+  remove(k){ try{ localStorage.removeItem(k); } catch(e){} },
+};
+
+const S = {
+  token: store.get('cm_token') || null,
+  userId: store.get('cm_userId') || null,
+  email: store.get('cm_email') || null,
+  fullName: store.get('cm_fullName') || '',
+  view: null,
+  authMode: 'login',
+  courts: [], equipments: [], timeslots: [],
+  court: null,
+  date: '', slot: null,
+  equipQty: {},
+  bookings: [],
+  booking: null,
+  bookingGames: [],
+  game: null,
+  ranking: [],
+  gameHistory: [],
+  userNames: {},
+  inviteTeam: 1,
+  sets: [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }],
+};
+
+function icon(name){
+  const paths = {
+    back: '<path d="M15 18l-6-6 6-6"/>',
+    logout: '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+    home: '<path d="M3 9l9-7 9 7"/><path d="M9 22V12h6v10"/><path d="M4 22h16"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="1"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M7 5H4a1 1 0 00-1 1v1a4 4 0 004 4M17 5h3a1 1 0 011 1v1a4 4 0 01-4 4"/>',
+    racket: '<circle cx="12" cy="8" r="5"/><path d="M12 13v8M9 21h6"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths[name]||''}</svg>`;
+}
+
+function toast(msg, type='ok'){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 3200);
+}
+
+function decodeJwt(token){
+  try{
+    const payload = token.split('.')[1];
+    const json = decodeURIComponent(atob(payload.replace(/-/g,'+').replace(/_/g,'/')).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(json);
+  } catch(e){ return null; }
+}
+
+async function api(base, path, { method='GET', body, auth=true } = {}){
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && S.token) headers['Authorization'] = 'Bearer ' + S.token;
+  let res;
+  try{
+    res = await fetch(base + path, { method, headers, body: body ? JSON.stringify(body) : undefined, mode: 'cors' });
+  } catch(e){
+    toast('Não foi possível conectar em ' + base + ' — a API está rodando?', 'error');
+    throw e;
+  }
+  const text = await res.text();
+  let data = null;
+  try{ data = text ? JSON.parse(text) : null; } catch(e){ data = text; }
+  if (!res.ok){
+    const msg = (data && (data.message || (Array.isArray(data) ? data.map(d=>d.description).join(', ') : JSON.stringify(data)))) || res.statusText;
+    toast(msg, 'error');
+    throw new Error(msg);
+  }
+  return data;
+}
+
+function fmtMoney(v){ return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+function fmtDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }) + ' · ' +
+    d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+}
+function fmtTimeSpan(ts){ return (ts||'').slice(0,5); }
+
+function go(view){ S.view = view; render(); }
+
+function logout(){
+  S.token = null; S.userId = null; S.email = null; S.fullName = '';
+  store.remove('cm_token'); store.remove('cm_userId'); store.remove('cm_email'); store.remove('cm_fullName');
+  go('auth');
+}
+
+function displayName(){ return S.fullName || S.email || '?'; }
+
+async function resolveUserNames(ids){
+  const missing = [...new Set(ids)].filter(id => id && id !== S.userId && !S.userNames[id]);
+  if (!missing.length) return;
+  try{
+    const res = await fetch(API.identity + '/api/auth/users/by-ids?ids=' + encodeURIComponent(missing.join(',')));
+    if (!res.ok) return;
+    const users = await res.json();
+    users.forEach(u => { S.userNames[u.id] = u.fullName || u.email; });
+  } catch(e){}
+}
+
+function nameFor(userId){
+  if (userId === S.userId) return 'Você';
+  return S.userNames[userId] || userId;
+}
+
+function logoBlock(){
+  return `<div class="logo"><div class="bar"></div><div class="logo-text"><span class="name">CourtMatch</span><span class="tagline">Clube de Padel</span></div></div>`;
+}
+
+// ---------- AUTH ----------
+function screenAuth(){
+  const isLogin = S.authMode === 'login';
+  return `
+    <div style="display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 44px);">
+      <div style="text-align:center;margin-bottom:44px;">
+        <div style="display:flex;justify-content:center;margin-bottom:14px;">${logoBlock()}</div>
+        <p style="color:var(--text-dim);font-size:13px;margin:0;">Reserve quadras. Monte o jogo. Suba no ranking.</p>
+      </div>
+
+      <div class="tabs">
+        <div class="tab ${isLogin?'active':''}" onclick="S.authMode='login';render()">Entrar</div>
+        <div class="tab ${!isLogin?'active':''}" onclick="S.authMode='register';render()">Criar conta</div>
+      </div>
+
+      ${!isLogin ? `<div class="field"><label>Nome completo</label><input id="in-name" type="text" placeholder="Seu nome"></div>` : ''}
+      <div class="field"><label>E-mail</label><input id="in-email" type="email" placeholder="voce@email.com" value=""></div>
+      <div class="field"><label>Senha</label><input id="in-pass" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" onclick="submitAuth()">${isLogin?'Entrar':'Criar conta e entrar'}</button>
+      <p class="mono" style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:18px;text-transform:uppercase;letter-spacing:0.05em;">
+        Ambiente de teste local — dados gravados no LocalDB
+      </p>
+    </div>`;
+}
+
+async function submitAuth(){
+  const email = document.getElementById('in-email').value.trim();
+  const password = document.getElementById('in-pass').value;
+  const nameEl = document.getElementById('in-name');
+  const fullName = nameEl ? nameEl.value.trim() : '';
+  if (!email || !password){ toast('Preencha e-mail e senha', 'error'); return; }
+  if (S.authMode === 'register' && !fullName){ toast('Informe seu nome', 'error'); return; }
+
+  try{
+    if (S.authMode === 'register'){
+      await api(API.identity, '/api/auth/register', { method:'POST', auth:false, body:{ fullName, email, password } });
+      toast('Conta criada! Entrando...', 'ok');
+    }
+    const res = await api(API.identity, '/api/auth/login', { method:'POST', auth:false, body:{ email, password } });
+    S.token = res.token;
+    const claims = decodeJwt(res.token) || {};
+    S.userId = claims.nameid || claims.sub;
+    S.email = email;
+    S.fullName = claims.name || '';
+    store.set('cm_token', S.token);
+    store.set('cm_userId', S.userId);
+    store.set('cm_email', S.email);
+    store.set('cm_fullName', S.fullName);
+    await loadCatalog();
+    go('home');
+  } catch(e){ /* toast already shown */ }
+}
+
+// ---------- HOME ----------
+async function loadCatalog(){
+  const [courts, equipments, timeslots] = await Promise.all([
+    api(API.catalog, '/api/courts'),
+    api(API.catalog, '/api/equipments'),
+    api(API.catalog, '/api/timeslots'),
+  ]);
+  S.courts = courts || []; S.equipments = equipments || []; S.timeslots = timeslots || [];
+}
+
+function screenHome(){
+  if (!S.date) S.date = new Date().toISOString().slice(0,10);
+  const duration = S.slot ? slotDuration(S.slot) : 1;
+
+  const slotChips = S.timeslots.length ? `<div class="chips">${S.timeslots.map(t => `
+      <div class="chip ${S.slot && S.slot.id===t.id ? 'selected':''}" onclick="pickSlot('${t.id}')">${fmtTimeSpan(t.startTime)}–${fmtTimeSpan(t.endTime)}</div>
+    `).join('')}</div>` : `<p class="mono" style="color:var(--text-dim);font-size:11px;">Nenhum horário cadastrado no clube ainda.</p>`;
+
+  const list = S.courts.length ? S.courts.map(c => `
+    <div class="row-item" onclick="openCourt('${c.id}')">
+      <div>
+        <h3>${c.name}</h3>
+        <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="price-tag">${fmtMoney(c.pricePerHour*duration)}<small>${duration}h · ${fmtMoney(c.pricePerHour)}/h</small></div>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCourt('${c.id}')">Reservar</button>
+      </div>
+    </div>`).join('') : emptyState('calendar', 'Nenhuma quadra cadastrada ainda.');
+
+  return `
+    <div class="header-row" style="margin-bottom:26px;">
+      ${logoBlock()}
+      <button class="avatar" style="border:none;cursor:pointer;" onclick="navTo('profile')">${displayName()[0].toUpperCase()}</button>
+    </div>
+    <div class="eyebrow">Campos · ${new Date(S.date+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+    <h2 style="font-size:24px;margin:0 0 20px;">Pesquisar campo</h2>
+
+    <div class="field"><label>Data</label><input type="date" value="${S.date}" onchange="S.date=this.value;render()"></div>
+    <div class="field"><label>Horário</label>${slotChips}</div>
+
+    <div class="section">
+      <div class="section-label">Campos disponíveis</div>
+      ${list}
+    </div>
+  `;
+}
+
+async function openCourt(id){
+  S.court = S.courts.find(c => c.id === id);
+  S.equipQty = {};
+  go('court');
+}
+
+// ---------- COURT / BOOKING ----------
+function slotDuration(slot){
+  const [h1,m1] = slot.startTime.split(':').map(Number);
+  const [h2,m2] = slot.endTime.split(':').map(Number);
+  return ((h2*60+m2) - (h1*60+m1)) / 60;
+}
+
+function equipTotal(){
+  return Object.entries(S.equipQty).reduce((sum,[id,qty]) => {
+    const e = S.equipments.find(x => x.id === id);
+    return sum + (e ? e.rentalPrice * qty : 0);
+  }, 0);
+}
+
+function screenCourt(){
+  const c = S.court;
+  const duration = S.slot ? slotDuration(S.slot) : 1;
+  const courtPrice = c.pricePerHour * duration;
+  const total = courtPrice + equipTotal();
+
+  const slotChips = S.timeslots.length ? `<div class="chips">${S.timeslots.map(t => `
+      <div class="chip ${S.slot && S.slot.id===t.id ? 'selected':''}" onclick="pickSlot('${t.id}')">${fmtTimeSpan(t.startTime)}–${fmtTimeSpan(t.endTime)}</div>
+    `).join('')}</div>` : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum horário cadastrado — usando 1h a partir das 18:00.</p>`;
+
+  const equipRows = S.equipments.length ? S.equipments.map(e => `
+      <div class="equip-row">
+        <div>
+          <div class="name">${e.name}</div>
+          <div class="sub">${fmtMoney(e.rentalPrice)} · estoque ${e.stock}</div>
+        </div>
+        <div class="stepper">
+          <button onclick="stepEquip('${e.id}',-1)">−</button>
+          <span class="qty">${S.equipQty[e.id]||0}</span>
+          <button onclick="stepEquip('${e.id}',1)">+</button>
+        </div>
+      </div>`).join('') : `<p class="mono" style="color:var(--text-dim);font-size:11.5px;">Nenhum equipamento cadastrado.</p>`;
+
+  return `
+    <div class="header-row">
+      <div class="icon-btn" onclick="go('home')">${icon('back')}</div>
+      <div class="eyebrow" style="margin:0;">Detalhes do campo</div>
+    </div>
+    <h2 style="font-size:26px;margin:0 0 8px;">${c.name}</h2>
+    <span class="tag ${c.isIndoor?'tag-indoor':'tag-outdoor'}">${c.isIndoor?'Indoor':'Outdoor'}</span>
+
+    <div class="field" style="margin-top:22px;">
+      <label>Data</label>
+      <input type="date" value="${S.date}" onchange="S.date=this.value">
+    </div>
+
+    <div class="field">
+      <label>Horário</label>
+      ${slotChips}
+    </div>
+
+    <div class="section">
+      <div class="section-label">Equipamentos (opcional)</div>
+      ${equipRows}
+    </div>
+
+    <div class="section">
+      <div class="summary-row"><span>Quadra (${duration}h × ${fmtMoney(c.pricePerHour)})</span><span>${fmtMoney(courtPrice)}</span></div>
+      <div class="summary-row"><span>Equipamentos</span><span>${fmtMoney(equipTotal())}</span></div>
+      <div class="summary-row total"><span>Total</span><span>${fmtMoney(total)}</span></div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="submitBooking()">Reservar quadra</button>
+  `;
+}
+
+function pickSlot(id){ S.slot = S.timeslots.find(t => t.id === id); render(); }
+function stepEquip(id, delta){
+  const cur = S.equipQty[id] || 0;
+  const next = Math.max(0, cur + delta);
+  if (next === 0) delete S.equipQty[id]; else S.equipQty[id] = next;
+  render();
+}
+
+async function submitBooking(){
+  const c = S.court;
+  const duration = S.slot ? slotDuration(S.slot) : 1;
+  const startStr = S.slot ? S.slot.startTime : '18:00:00';
+  const endStr = S.slot ? S.slot.endTime : '19:00:00';
+  const startTime = `${S.date}T${startStr}`;
+  const endTime = `${S.date}T${endStr}`;
+  const courtPrice = c.pricePerHour * duration;
+  const total = courtPrice + equipTotal();
+
+  try{
+    const created = await api(API.booking, '/api/bookings', { method:'POST', body:{
+      courtId: c.id, hostPlayerId: S.userId, startTime, endTime, courtPrice, totalPrice: total
+    }});
+
+    for (const [equipId, qty] of Object.entries(S.equipQty)){
+      const e = S.equipments.find(x => x.id === equipId);
+      await api(API.booking, `/api/bookings/${created.id}/equipments`, { method:'POST', body:{
+        equipmentId: equipId, quantity: qty, unitPrice: e.rentalPrice
+      }});
+    }
+
+    toast('Reserva criada!', 'ok');
+    await openBookingDetail(created.id);
+  } catch(e){ /* toast already shown */ }
+}
+
+// ---------- MY BOOKINGS ----------
+async function loadMyBookings(){
+  const all = await api(API.booking, '/api/bookings?startDate=2020-01-01T00:00:00&endDate=2035-01-01T00:00:00');
+  S.bookings = (all||[]).filter(b => b.hostPlayerId?.toLowerCase() === S.userId?.toLowerCase())
+    .sort((a,b) => new Date(b.startTime) - new Date(a.startTime));
+}
+
+function screenMyBookings(){
+  const list = S.bookings.length ? S.bookings.map(b => {
+    const court = S.courts.find(c => c.id === b.courtId);
+    return `
+      <div class="row-item" onclick="openBookingDetail('${b.id}')">
+        <div>
+          <h3>${court ? court.name : 'Quadra'}</h3>
+          <div class="meta">${fmtDate(b.startTime)}</div>
+        </div>
+        <span class="status-pill status-${b.status}">${b.status}</span>
+      </div>`;
+  }).join('') : emptyState('calendar', 'Você ainda não tem reservas.');
+
+  return `
+    <div class="eyebrow">Programação</div>
+    <h2 style="font-size:24px;margin:0 0 22px;">Minhas reservas</h2>
+    ${list}
+  `;
+}
+
+async function getGamesForBooking(bookingId){
+  try{
+    const res = await fetch(API.game + '/api/games/by-booking/' + bookingId, {
+      headers: S.token ? { 'Authorization': 'Bearer ' + S.token } : {}
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e){ return []; }
+}
+
+async function openBookingDetail(id){
+  S.booking = await api(API.booking, `/api/bookings/${id}`);
+  S.bookingGames = S.booking.status === 'Confirmed' ? await getGamesForBooking(id) : [];
+  go('booking');
+}
+
+async function openGame(id){
+  S.game = S.bookingGames.find(g => g.id === id);
+  await resolveUserNames(S.game.participants.map(p => p.userId));
+  go('game');
+}
+
+function screenBookingDetail(){
+  const b = S.booking;
+  const court = S.courts.find(c => c.id === b.courtId);
+  const equipRows = b.bookingEquipments && b.bookingEquipments.length ? b.bookingEquipments.map(be => {
+    const e = S.equipments.find(x => x.id === be.equipmentId);
+    return `<div class="equip-row"><div class="name">${e?e.name:'Equipamento'} ×${be.quantity}</div><div class="mono">${fmtMoney(be.totalPrice)}</div></div>`;
+  }).join('') : '';
+
+  return `
+    <div class="header-row">
+      <div class="icon-btn" onclick="go('mybookings')">${icon('back')}</div>
+      <div class="eyebrow" style="margin:0;flex:1;">Gestão da reserva</div>
+      <span class="status-pill status-${b.status}">${b.status}</span>
+    </div>
+    <h2 style="font-size:26px;margin:0 0 4px;">${court ? court.name : 'Reserva'}</h2>
+    ${court ? `<span class="tag ${court.isIndoor?'tag-indoor':'tag-outdoor'}">${court.isIndoor?'Indoor':'Outdoor'}</span>` : ''}
+
+    <div class="section" style="margin-top:18px;">
+      <div class="summary-row"><span>Data</span><span>${fmtDate(b.startTime)}</span></div>
+      <div class="summary-row"><span>Até</span><span>${fmtDate(b.endTime)}</span></div>
+      <div class="summary-row"><span>Preço da quadra</span><span>${fmtMoney(b.courtPrice)}</span></div>
+      ${equipRows}
+      <div class="summary-row total"><span>Total pago</span><span>${fmtMoney(b.totalPrice)}</span></div>
+    </div>
+
+    <div style="margin-top:18px;">
+      ${b.status === 'Pending' ? `
+        <button class="btn btn-primary" onclick="bookingAction('confirm')">Confirmar reserva</button>
+        <div style="height:10px;"></div>
+        <button class="btn btn-danger" onclick="bookingAction('cancel')">Cancelar reserva</button>
+      ` : ''}
+      ${b.status === 'Confirmed' ? `
+        ${S.bookingGames.length ? `<div class="section-label" style="margin-top:6px;">Jogos desta reserva</div>` : ''}
+        ${S.bookingGames.map(g => `
+          <div class="tile" onclick="openGame('${g.id}')">
+            <div class="icon-wrap">${icon('trophy')}</div>
+            <div><div class="label">Jogo · ${fmtDate(g.scheduledAt)}</div><div class="sub">${g.status}</div></div>
+          </div>
+        `).join('')}
+        <div class="tile" onclick="createGameFromBooking()">
+          <div class="icon-wrap">${icon('plus')}</div>
+          <div><div class="label">Criar novo jogo</div><div class="sub">Organizar partida</div></div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function bookingAction(action){
+  try{
+    S.booking = await api(API.booking, `/api/bookings/${S.booking.id}/${action}`, { method:'PATCH' });
+    toast(action === 'confirm' ? 'Reserva confirmada!' : 'Reserva cancelada.', 'ok');
+    render();
+  } catch(e){}
+}
+
+async function createGameFromBooking(){
+  const b = S.booking;
+  try{
+    S.game = await api(API.game, '/api/games', { method:'POST', body:{
+      bookingId: b.id, facilityId: b.courtId, scheduledAt: b.startTime,
+      participants: [{ userId: S.userId, teamNumber: 1 }]
+    }});
+    S.bookingGames.push(S.game);
+    toast('Jogo criado!', 'ok');
+    go('game');
+  } catch(e){}
+}
+
+// ---------- GAME ----------
+function screenGame(){
+  const g = S.game;
+  const teams = [1,2].map(team => {
+    const players = g.participants.filter(p => p.teamNumber === team);
+    return `
+      <div class="section">
+        <div class="section-label">Equipa ${team === 1 ? 'A' : 'B'}</div>
+        ${players.length ? players.map(p => `
+          <div class="equip-row">
+            <div class="name" style="font-size:12.5px;">${nameFor(p.userId)}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="status-pill status-${p.status}">${p.status}</span>
+              ${p.userId === S.userId && p.status === 'Invited' ? `
+                <button class="btn btn-sm btn-primary" onclick="respondInvite(true)">Aceitar</button>
+              ` : ''}
+            </div>
+          </div>`).join('') : `<div class="mono" style="color:var(--text-dim);font-size:11.5px;">Ninguém ainda</div>`}
+      </div>`;
+  }).join('');
+
+  const setsRows = g.sets && g.sets.length ? g.sets.map(s => `
+    <div class="summary-row"><span>Set ${s.setNumber}</span><span>${s.teamOneGames} – ${s.teamTwoGames}</span></div>
+  `).join('') : '';
+
+  return `
+    <div class="header-row">
+      <div class="icon-btn" onclick="go('booking')">${icon('back')}</div>
+      <div class="eyebrow" style="margin:0;flex:1;">Partida</div>
+      <span class="status-pill status-${g.status}">${g.status}</span>
+    </div>
+    <h2 style="font-size:26px;margin:0 0 6px;">Jogo</h2>
+
+    ${teams}
+
+    ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
+      <div class="section">
+        <div class="section-label">Convidar jogador</div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Buscar por nome ou e-mail</label>
+          <input type="text" placeholder="Digite para buscar..." oninput="onInviteSearchInput(this.value)">
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Selecionar jogador</label>
+          <select id="invite-user-select"><option value="">Digite acima para buscar...</option></select>
+        </div>
+        <div class="chips" style="margin-bottom:14px;">
+          <div class="chip ${S.inviteTeam===1?'selected':''}" onclick="S.inviteTeam=1;render()">Equipa A</div>
+          <div class="chip ${S.inviteTeam===2?'selected':''}" onclick="S.inviteTeam=2;render()">Equipa B</div>
+        </div>
+        <button class="btn btn-ghost" onclick="invitePlayer()">Enviar convite</button>
+      </div>
+    ` : ''}
+
+    ${setsRows ? `<div class="section"><div class="section-label">Placar</div>${setsRows}</div>` : ''}
+
+    ${g.status !== 'Completed' && g.status !== 'Cancelled' ? `
+      <div class="section">
+        <div class="section-label">Registrar resultado</div>
+        ${S.sets.map((s,i) => `
+          <div class="set-row">
+            <span style="width:40px;">Set ${s.setNumber}</span>
+            <input type="number" min="0" value="${s.teamOneGames}" onchange="S.sets[${i}].teamOneGames=+this.value">
+            <span>×</span>
+            <input type="number" min="0" value="${s.teamTwoGames}" onchange="S.sets[${i}].teamTwoGames=+this.value">
+          </div>
+        `).join('')}
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="addSet()">+ Set</button>
+          <button class="btn btn-primary btn-sm" style="flex:1;" onclick="registerResult()">Salvar resultado</button>
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+let inviteSearchTimer = null;
+function onInviteSearchInput(term){
+  clearTimeout(inviteSearchTimer);
+  inviteSearchTimer = setTimeout(() => doInviteSearch(term), 300);
+}
+
+async function doInviteSearch(term){
+  const selectEl = document.getElementById('invite-user-select');
+  if (!selectEl) return;
+  term = (term || '').trim();
+  if (!term){ selectEl.innerHTML = '<option value="">Digite acima para buscar...</option>'; return; }
+  selectEl.innerHTML = '<option value="">Buscando...</option>';
+  try{
+    const res = await fetch(API.identity + '/api/auth/users?search=' + encodeURIComponent(term) + '&limit=15');
+    const users = res.ok ? await res.json() : [];
+    const filtered = users.filter(u => u.id !== S.userId);
+    selectEl.innerHTML = filtered.length
+      ? filtered.map(u => `<option value="${u.id}">${u.fullName || u.email}${u.fullName ? ' — ' + u.email : ''}</option>`).join('')
+      : '<option value="">Nenhum jogador encontrado</option>';
+  } catch(e){
+    selectEl.innerHTML = '<option value="">Erro ao buscar</option>';
+  }
+}
+
+async function invitePlayer(){
+  const userId = document.getElementById('invite-user-select').value;
+  if (!userId){ toast('Busque e selecione um jogador', 'error'); return; }
+  try{
+    S.game = await api(API.game, `/api/games/${S.game.id}/invite`, { method:'POST', body:{ userId, teamNumber: S.inviteTeam } });
+    await resolveUserNames([userId]);
+    toast('Convite enviado!', 'ok');
+    render();
+  } catch(e){}
+}
+
+async function respondInvite(confirm){
+  try{
+    const action = confirm ? 'confirm' : 'decline';
+    S.game = await api(API.game, `/api/games/${S.game.id}/players/${S.userId}/${action}`, { method:'POST' });
+    toast(confirm ? 'Participação confirmada!' : 'Convite recusado.', 'ok');
+    render();
+  } catch(e){}
+}
+
+function addSet(){
+  S.sets.push({ setNumber: S.sets.length + 1, teamOneGames: 0, teamTwoGames: 0 });
+  render();
+}
+
+async function registerResult(){
+  try{
+    S.game = await api(API.game, `/api/games/${S.game.id}/result`, { method:'POST', body:{ sets: S.sets } });
+    toast('Resultado registrado!', 'ok');
+    S.sets = [{ setNumber: 1, teamOneGames: 0, teamTwoGames: 0 }];
+    render();
+  } catch(e){}
+}
+
+// ---------- RANKING ----------
+async function loadRanking(){
+  S.ranking = await api(API.game, '/api/ranking?top=20');
+  await resolveUserNames(S.ranking.map(r => r.userId));
+}
+
+function screenRanking(){
+  const rows = S.ranking.length ? S.ranking.map((r,i) => `
+    <div class="rank-row">
+      <div class="rank-num ${i===0?'top1':''}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-uid">${nameFor(r.userId)}</div>
+        <div class="rank-sub">${r.gamesWon}V ${r.gamesPlayed - r.gamesWon}D · ${Math.round(r.winRate)}% vit.</div>
+      </div>
+      <div class="rank-pts">${r.rankingPoints}</div>
+    </div>
+  `).join('') : emptyState('trophy', 'Ninguém no ranking ainda — complete um jogo para aparecer aqui.');
+
+  return `
+    <div class="eyebrow">Clube</div>
+    <h2 style="font-size:24px;margin:0 0 22px;">Ranking</h2>
+    ${rows}
+  `;
+}
+
+// ---------- PROFILE ----------
+async function loadProfile(){
+  const [history] = await Promise.all([
+    api(API.game, `/api/games/history/${S.userId}`),
+    loadRanking(),
+  ]);
+  S.gameHistory = (history || []).slice().sort((a,b) => new Date(b.scheduledAt) - new Date(a.scheduledAt));
+}
+
+function setBalance(g, myTeam){
+  let won=0, lost=0;
+  (g.sets||[]).forEach(s => {
+    const mine = myTeam===1 ? s.teamOneGames : s.teamTwoGames;
+    const theirs = myTeam===1 ? s.teamTwoGames : s.teamOneGames;
+    if (mine>theirs) won++; else if (theirs>mine) lost++;
+  });
+  return [won,lost];
+}
+
+function screenProfile(){
+  const completed = S.gameHistory.filter(g => g.status === 'Completed');
+  const wins = completed.filter(g => {
+    const me = g.participants.find(p => p.userId === S.userId);
+    return me && me.teamNumber === g.winningTeam;
+  }).length;
+  const played = completed.length;
+  const winRate = played ? Math.round(wins/played*100) : 0;
+  const rankPos = S.ranking.findIndex(r => r.userId === S.userId);
+
+  const activity = S.gameHistory.length ? S.gameHistory.slice(0,8).map(g => {
+    const court = S.courts.find(c => c.id === g.facilityId);
+    const me = g.participants.find(p => p.userId === S.userId);
+    const isCompleted = g.status === 'Completed';
+    const won = isCompleted && me && me.teamNumber === g.winningTeam;
+    const [sw, sl] = me ? setBalance(g, me.teamNumber) : [0,0];
+    return `
+      <div class="row-item" style="cursor:default;" onclick="event.stopPropagation()">
+        <div>
+          <h3>${court ? court.name : 'Jogo'}</h3>
+          <div class="meta">${new Date(g.scheduledAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})}</div>
+        </div>
+        <div style="text-align:right;">
+          ${isCompleted ? `<div class="price-tag" style="color:${won?'var(--gold)':'var(--clay)'}">${sw} – ${sl}</div>` : ''}
+          <span class="status-pill status-${g.status}">${isCompleted ? (won?'Vitória':'Derrota') : g.status}</span>
+        </div>
+      </div>`;
+  }).join('') : emptyState('trophy', 'Nenhum jogo disputado ainda.');
+
+  return `
+    <div class="eyebrow">Membro · Nº ${S.userId ? S.userId.slice(0,4).toUpperCase() : '----'}</div>
+    <h2 style="font-size:24px;margin:0 0 22px;">Perfil</h2>
+
+    <div class="section" style="border-top:2px solid var(--gold);padding-top:18px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+        <div class="avatar" style="width:52px;height:52px;font-size:20px;">${displayName()[0].toUpperCase()}</div>
+        <div style="min-width:0;">
+          <h3 style="font-family:'Anton',sans-serif;text-transform:uppercase;font-size:16px;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName()}</h3>
+          <div class="meta" style="margin-bottom:4px;">${S.email||''}</div>
+          <div class="meta">${rankPos >= 0 ? `#${rankPos+1} no ranking` : 'Sem posição no ranking'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;">
+        <div><div class="price-tag" style="text-align:left;">${played}</div><div class="meta">Partidas</div></div>
+        <div><div class="price-tag" style="text-align:left;">${wins}</div><div class="meta">Vitórias</div></div>
+        <div><div class="price-tag" style="text-align:left;">${winRate}%</div><div class="meta">Taxa de vitória</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Atividade recente</div>
+      ${activity}
+    </div>
+
+    <button class="btn btn-danger" style="margin-top:8px;" onclick="logout()">Terminar sessão</button>
+  `;
+}
+
+// ---------- SHELL ----------
+function emptyState(iconName, text){
+  return `<div class="empty">${icon(iconName)}<p>${text}</p></div>`;
+}
+
+const navItems = [
+  { v:'home', i:'home', l:'Início' },
+  { v:'mybookings', i:'calendar', l:'Reservas' },
+  { v:'ranking', i:'trophy', l:'Ranking' },
+  { v:'profile', i:'user', l:'Perfil' },
+];
+
+function bottomNav(){
+  return `<div class="bottom-nav">
+    ${navItems.map(it => `
+      <button class="nav-item ${S.view===it.v?'active':''}" onclick="navTo('${it.v}')">${icon(it.i)}<span>${it.l}</span></button>
+    `).join('')}
+  </div>`;
+}
+
+function sidebar(){
+  return `
+    ${logoBlock()}
+    <div class="sb-section-label">Menu principal</div>
+    <nav class="sb-nav">
+      ${navItems.map(it => `
+        <button class="sb-nav-item ${S.view===it.v?'active':''}" onclick="navTo('${it.v}')">${icon(it.i)}${it.l}</button>
+      `).join('')}
+    </nav>
+    <button class="sb-user" onclick="navTo('profile')">
+      <div class="avatar">${displayName()[0].toUpperCase()}</div>
+      <div class="info"><div class="n">${displayName()}</div><div class="t">Membro</div></div>
+    </button>
+  `;
+}
+
+async function navTo(view){
+  if (view === 'mybookings') await loadMyBookings();
+  if (view === 'ranking') await loadRanking();
+  if (view === 'profile') await loadProfile();
+  go(view);
+}
+
+const authedViews = ['home','court','mybookings','booking','game','ranking','profile'];
+
+async function render(){
+  const screenEl = document.getElementById('screen');
+  const navSlot = document.getElementById('nav-slot');
+  const sidebarEl = document.getElementById('sidebar');
+
+  const renderers = {
+    auth: screenAuth,
+    home: screenHome,
+    court: screenCourt,
+    mybookings: screenMyBookings,
+    booking: screenBookingDetail,
+    game: screenGame,
+    ranking: screenRanking,
+    profile: screenProfile,
+  };
+
+  screenEl.innerHTML = renderers[S.view] ? renderers[S.view]() : '<div class="loader"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+  navSlot.innerHTML = authedViews.includes(S.view) ? bottomNav() : '';
+  sidebarEl.innerHTML = authedViews.includes(S.view) ? sidebar() : '';
+}
+
+async function boot(){
+  if (S.token){
+    try{
+      await loadCatalog();
+      go('home');
+      return;
+    } catch(e){ logout(); return; }
+  }
+  go('auth');
+}
+
+boot();
+</script>
+</body>
+</html>

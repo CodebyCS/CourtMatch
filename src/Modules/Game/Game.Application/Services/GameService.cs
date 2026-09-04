@@ -18,9 +18,6 @@ public class GameService : IGameService
 
     public async Task<GameDto> CreateGameAsync(CreateGameDto dto, CancellationToken ct = default)
     {
-        if (await _gameRepository.ExistsForBookingAsync(dto.BookingId, ct))
-            throw new InvalidOperationException($"Já existe um jogo associado à reserva '{dto.BookingId}'.");
-
         var game = new Domain.Entities.Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt);
 
         foreach (var participant in dto.Participants)
@@ -34,6 +31,12 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
         return ToDto(game);
+    }
+
+    public async Task<IReadOnlyList<GameDto>> GetByBookingIdAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        var games = await _gameRepository.GetByBookingIdAsync(bookingId, ct);
+        return games.Select(ToDto).ToList();
     }
 
     public async Task<GameDto> InvitePlayerAsync(Guid gameId, InvitePlayerDto dto, CancellationToken ct = default)

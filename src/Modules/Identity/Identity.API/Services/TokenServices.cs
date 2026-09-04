@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
+using Identity.API.Data;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.API.Services;
@@ -15,7 +15,7 @@ public class TokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(IdentityUser user)
+    public string GenerateToken(ApplicationUser user)
     {
         var secretKey = _configuration["JwtSettings:Secret"];
 
@@ -31,7 +31,8 @@ public class TokenService
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.FullName ?? string.Empty)
             }),
             Expires = DateTime.UtcNow.AddHours(2), // Validade do token
             SigningCredentials = new SigningCredentials(
