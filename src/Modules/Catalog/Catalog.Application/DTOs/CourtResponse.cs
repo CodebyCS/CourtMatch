@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Catalog.Domain.Domain;
 using Catalog.Domain.Entities;
 
 namespace Catalog.Application.DTOs
@@ -11,10 +12,12 @@ namespace Catalog.Application.DTOs
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public bool IsIndoor { get; set; }
 
         public decimal PricePerHour { get; set; }
+
+        public CourtStatus Status { get; set; }
     }
 }

@@ -31,6 +31,7 @@ namespace FacilitiesCatalog.API
             builder.Services.AddScoped<ICourtService, CourtService>();
             builder.Services.AddScoped<IEquipmentService, EquipmentService>();
             builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateCourtRequestValidator>();
 
             var app = builder.Build();
 
