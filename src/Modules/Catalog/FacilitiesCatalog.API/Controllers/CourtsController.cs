@@ -15,6 +15,7 @@ namespace FacilitiesCatalog.API.Controllers
             _courtService = courtService;
         }
 
+        // GET: /api/courts
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -22,32 +23,49 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok(result);
         }
 
+        // GET: /api/courts/{id}
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById (Guid id, CancellationToken cancellationToken)
+        {
+            var court = await _courtService.GetCourtByIdAsync(id, cancellationToken);
+
+            return Ok(court);
+        }
+
+        // POST: /api/courts
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CourtDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create([FromBody] CreateCourtRequest request, CancellationToken cancellationToken)
         {
-            await _courtService.CreateCourtAsync(dto, cancellationToken);
-            return Ok();
+            var court = await _courtService.CreateCourtAsync(request, cancellationToken);
+
+            return CreatedAtAction(nameof(GetById), new { id = court.Id }, court);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] CourtDto dto, CancellationToken cancellationToken)
+        // PUT: /api/courts/{id}
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCourtRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _courtService.UpdateCourtAsync(dto, cancellationToken);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.InnerException?.Message ?? ex.Message);
-            }
+            await _courtService.UpdateCourtAsync(id, request, cancellationToken);
+            return NoContent();
         }
 
+        // DELETE: /api/courts/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             await _courtService.DeleteCourtAsync(id, cancellationToken);
-            return Ok();
+            return NoContent();
+        }
+
+        // PATCH: /api/courts/{id}/block
+        [HttpPatch("{id:guid}/block")]
+        public async Task<IActionResult> Block(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            await _courtService.BlockCourtAsync(id, cancellationToken);
+
+            return NoContent();
         }
     }
 }
