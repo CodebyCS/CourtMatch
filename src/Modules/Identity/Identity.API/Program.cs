@@ -10,8 +10,12 @@ namespace Identity.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Garante a leitura do UserSecrets
+            builder.Configuration.AddUserSecrets<Program>();
+
             // Config. connecion string.
-            var connectionString = builder.Configuration.GetConnectionString("SupabaseConnection");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("DefaultConnection is not configured.");
 
             // Config. DbContext.
             builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
@@ -24,8 +28,8 @@ namespace Identity.API
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })

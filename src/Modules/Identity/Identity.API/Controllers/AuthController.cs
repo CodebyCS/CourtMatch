@@ -11,11 +11,13 @@ namespace Identity.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly TokenService _tokenService;
 
-    public AuthController(UserManager<IdentityUser> userManager, TokenService tokenService)
+    public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, TokenService tokenService)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _tokenService = tokenService;
     }
 
@@ -28,19 +30,32 @@ public class AuthController : ControllerBase
         var userExists = await _userManager.FindByEmailAsync(model.Email);
 
         if (userExists != null)
-            return BadRequest(new { message = "This email is alread in use."});
-            
+            return BadRequest(new { message = "This email is alread in use." });
+
         var user = new IdentityUser { UserName = model.Email, Email = model.Email };
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description);
             return BadRequest(result.Errors);
+
+        // Assegura que a role existe e associa ao utilizador
+        const string roleToAssign = "Player";
+        if (!await _roleManager.RoleExistsAsync(roleToAssign))
+        {
+            var createRoleResult = await _roleManager.CreateAsync(
+                new IdentityRole(roleToAssign));
+
+            if (!createRoleResult.Succeeded)
+                return StatusCode(500, createRoleResult.Errors);
         }
 
-        return Ok(new { Message = "User registered successfully" });
+        var addRoleResult = await _userManager.AddToRoleAsync(user, roleToAssign);
+
+        if (!addRoleResult.Succeeded)
+            return StatusCode(500, addRoleResult.Errors);
+
+        return StatusCode(201, new { message = $"User registered successfully with role '{roleToAssign}'" });
     }
 
     [HttpPost("login")]
@@ -52,19 +67,21 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null)
-            return Unauthorized(new { message = "invalid email or password."});
+            return Unauthorized(new { message = "invalid email or password." });
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
 
         if (!isPasswordValid)
-            return Unauthorized(new { message = "invalid email or password."});
+            return Unauthorized(new { message = "Invalid email or password." });
 
-        var token = _tokenService.GenerateToken(user);
+        // Busca as roles do utilizador e gera o token com elas
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = _tokenService.GenerateToken(user, roles);
 
         return Ok(new UserLoginResponse
         {
             Token = token,
-            Expiration = DateTime.UtcNow.AddHours(2)
+            Expiration = DateTime.UtcNow.AddHours(4)
         });
     }
 }
