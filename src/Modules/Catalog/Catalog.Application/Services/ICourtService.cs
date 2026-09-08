@@ -1,4 +1,5 @@
 ﻿using Catalog.Application.DTOs;
+using Shared.Contracts.Catalog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,13 @@ namespace Catalog.Application.Services
         Task UpdateCourtAsync(Guid id, UpdateCourtRequest request, CancellationToken cancellationToken);
         Task DeleteCourtAsync(Guid id, CancellationToken cancellationToken);
         Task BlockCourtAsync(Guid id, CancellationToken cancellationToken);
+
+        // Verificar disponibilidade
+
+        Task<AvailabilityResponse> CheckAvailabilityAsync(
+            Guid courtId,
+            DateTime date,
+            TimeSpan startTime,
+            CancellationToken cancellationToken);
     }
 }
