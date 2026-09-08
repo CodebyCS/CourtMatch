@@ -12,4 +12,6 @@ public interface IGameService
     Task<GameDto> RegisterResultAsync(Guid gameId, RegisterResultDto dto, CancellationToken ct = default);
     Task<IReadOnlyList<GameDto>> GetHistoryByUserIdAsync(Guid userId, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerRankingDto>> GetRankingAsync(int top, CancellationToken ct = default);
+    Task<bool> IsCourtOccupiedAsync(Guid courtId, DateTime date, TimeSpan startTime, CancellationToken ct = default);
+    Task<GameDto> StartGameAsync(Guid gameId, CancellationToken ct = default);
 }

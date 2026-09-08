@@ -2,7 +2,7 @@ namespace Game.Application.DTOs;
 
 public record CreateGameDto(
     Guid BookingId,
-    Guid FacilityId,
+    Guid CourtId,
     DateTime ScheduledAt,
     List<InitialParticipantDto> Participants);
 

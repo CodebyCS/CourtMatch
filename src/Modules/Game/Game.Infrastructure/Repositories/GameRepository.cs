@@ -2,6 +2,7 @@
 using Game.Domain.Repositories;
 using Game.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Game.Domain.Entities.Enums;
 
 namespace Game.Infrastructure.Repositories;
 
@@ -44,5 +45,15 @@ public class GameRepository : IGameRepository
     {
         _context.Games.Update(game);
         await _context.SaveChangesAsync(ct);
+    }
+
+    public async Task<bool> IsCourtOccupiedAsync(Guid courtId, DateTime scheduledAt, CancellationToken ct = default)
+    {
+        return await _context.Games.AnyAsync(
+            game => 
+                game.CourtId == courtId &&
+                game.ScheduledAt == scheduledAt &&
+                game.Status != GameStatus.Cancelled,
+                ct);
     }
 }

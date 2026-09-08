@@ -12,7 +12,7 @@ public class Game
 {
     public Guid Id { get; private set; }
     public Guid BookingId { get; private set; }   // referência à reserva no Ordering.API
-    public Guid FacilityId { get; private set; }  // referência ao campo no Catalog.API
+    public Guid CourtId { get; private set; }  // referência ao campo no Catalog.API
     public DateTime ScheduledAt { get; private set; }
     public GameStatus Status { get; private set; }
     public int? WinningTeam { get; private set; } // 1 ou 2, definido após RegisterResult
@@ -27,11 +27,11 @@ public class Game
 
     protected Game() { } // EF Core
 
-    public Game(Guid bookingId, Guid facilityId, DateTime scheduledAt)
+    public Game(Guid bookingId, Guid courtId, DateTime scheduledAt)
     {
         Id = Guid.NewGuid();
         BookingId = bookingId;
-        FacilityId = facilityId;
+        CourtId = courtId;
         ScheduledAt = scheduledAt;
         Status = GameStatus.PendingConfirmation;
         CreatedAt = DateTime.UtcNow;
@@ -39,6 +39,7 @@ public class Game
 
     public GameParticipant InvitePlayer(Guid userId, int teamNumber)
     {
+        EnsureParticipantsCanChange();
         if (Status is GameStatus.Completed or GameStatus.Cancelled)
             throw new InvalidOperationException(
                 $"Não é possível convidar jogadores para um jogo com estado '{Status}'.");
@@ -59,29 +60,30 @@ public class Game
         var participant = new GameParticipant(Id, userId, teamNumber);
         _participants.Add(participant);
 
+        RefreshConfirmationStatus();
+
         return participant;
     }
 
     public void ConfirmParticipant(Guid userId)
     {
+        EnsureParticipantsCanChange();
+
         var participant = GetParticipantOrThrow(userId);
 
         participant.Confirm();
 
-        var minimoJogadores = 2; // permite singles (1v1); para pares, o serviço pode validar 4
-
-        if (_participants.Count >= minimoJogadores &&
-            _participants.All(p => p.Status == ParticipantStatus.Confirmed))
-        {
-            Status = GameStatus.Confirmed;
-        }
+        RefreshConfirmationStatus();
     }
 
     public void DeclineParticipant(Guid userId)
     {
+        EnsureParticipantsCanChange();
         var participant = GetParticipantOrThrow(userId);
 
         participant.Decline();
+
+        RefreshConfirmationStatus();
     }
 
     public void Start()
@@ -98,25 +100,55 @@ public class Game
     /// </summary>
     public void RegisterResult(IReadOnlyList<GameSet> sets)
     {
-        if (Status == GameStatus.Cancelled)
+        if (Status != GameStatus.InProgress)
+        {
             throw new InvalidOperationException(
-                "Não é possível registar resultado num jogo cancelado.");
+                "Só é possível registar resultados num jogo em curso.");
+        }
 
-        if (sets == null)
-            throw new ArgumentNullException(nameof(sets));
-
-        if (sets.Count == 0)
+        if (sets is null || sets.Count == 0)
             throw new ArgumentException(
-                "É necessário indicar pelo menos um set.",
-                nameof(sets));
+                "É necessário indicar pelo menos um set.");
 
+        if (sets.Any(set => set is null || set.GameId != Id))
+            throw new ArgumentException(
+                "Todos os sets devem pertencer a este jogo.");
+
+        var orderedSets = sets
+            .OrderBy(set => set.SetNumber)
+            .ToList();
+
+        if (!orderedSets.Select(set => set.SetNumber)
+                .SequenceEqual(Enumerable.Range(1, orderedSets.Count)))
+        {
+            throw new ArgumentException(
+                "Os sets devem ter números consecutivos, sem repetições.");
+        }
+
+        if (orderedSets.Any(set => !GameSet.IsValidScore(
+                set.TeamOneGames,
+                set.TeamTwoGames,
+                set.TieBreakTeamOne,
+                set.TieBreakTeamTwo)))
+        {
+            throw new ArgumentException("Existem pontuações inválidas.");
+        }
+
+        var setsTeamOne = orderedSets.Count(
+            set => set.WinningTeam() == 1);
+
+        var setsTeamTwo = orderedSets.Count(
+            set => set.WinningTeam() == 2);
+
+        if (setsTeamOne == setsTeamTwo)
+            throw new ArgumentException(
+                "O resultado final deve ter uma equipa vencedora.");
+
+        // Só altera a entidade depois das validações.
         _sets.Clear();
-        _sets.AddRange(sets);
+        _sets.AddRange(orderedSets);
 
-        var setsTeam1 = sets.Count(s => s.WinningTeam() == 1);
-        var setsTeam2 = sets.Count(s => s.WinningTeam() == 2);
-
-        WinningTeam = setsTeam1 > setsTeam2 ? 1 : 2;
+        WinningTeam = setsTeamOne > setsTeamTwo ? 1 : 2;
         Status = GameStatus.Completed;
         CompletedAt = DateTime.UtcNow;
     }
@@ -155,5 +187,29 @@ public class Game
                 $"Não foi encontrado nenhum participante com o Id '{userId}'.");
 
         return participant;
+    }
+
+    private void EnsureParticipantsCanChange()
+    {
+        if (Status is not (
+            GameStatus.PendingConfirmation or GameStatus.Confirmed))
+        {
+            throw new InvalidOperationException(
+                "Não é possível alterar participantes neste estado.");
+        }
+    }
+
+    private void RefreshConfirmationStatus()
+    {
+        var isConfirmed =
+            _participants.Count is >= 2 and <= 4 &&
+            _participants.Any(p => p.TeamNumber == 1) &&
+            _participants.Any(p => p.TeamNumber == 2) &&
+            _participants.All(
+                p => p.Status == ParticipantStatus.Confirmed);
+
+        Status = isConfirmed
+            ? GameStatus.Confirmed
+            : GameStatus.PendingConfirmation;
     }
 }

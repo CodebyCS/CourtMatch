@@ -2,6 +2,8 @@
 using Game.Application.Interfaces;
 using Game.Domain.Entities;
 using Game.Domain.Repositories;
+using Shared.Contracts.Exceptions;
+using FluentValidation;
 
 namespace Game.Application.Services;
 
@@ -10,18 +12,40 @@ public class GameService : IGameService
     private readonly IGameRepository _gameRepository;
     private readonly IPlayerRankingRepository _rankingRepository;
 
-    public GameService(IGameRepository gameRepository, IPlayerRankingRepository rankingRepository)
+    private readonly IValidator<CreateGameDto> _createValidator;
+
+    public GameService(IGameRepository gameRepository, IPlayerRankingRepository rankingRepository,  IValidator<CreateGameDto> createValidator)
     {
         _gameRepository = gameRepository;
         _rankingRepository = rankingRepository;
+        _createValidator = createValidator;
     }
 
     public async Task<GameDto> CreateGameAsync(CreateGameDto dto, CancellationToken ct = default)
     {
-        if (await _gameRepository.ExistsForBookingAsync(dto.BookingId, ct))
-            throw new InvalidOperationException($"Já existe um jogo associado à reserva '{dto.BookingId}'.");
+        var validation = await _createValidator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+        {
+            throw new BadRequestException(
+                string.Join(" ", validation.Errors.Select(e => e.ErrorMessage)));
+        }
 
-        var game = new Domain.Entities.Game(dto.BookingId, dto.FacilityId, dto.ScheduledAt);
+        if (await _gameRepository.ExistsForBookingAsync(dto.BookingId, ct))
+        {
+            throw new BadRequestException(
+                "Já existe um jogo associado a esta reserva.");
+        }
+
+        if (await _gameRepository.IsCourtOccupiedAsync(
+                dto.CourtId,
+                dto.ScheduledAt,
+                ct))
+        {
+            throw new BadRequestException(
+                "The court is already occupied at the selected date and time.");
+        }
+
+        var game = new Domain.Entities.Game(dto.BookingId, dto.CourtId, dto.ScheduledAt);
 
         foreach (var participant in dto.Participants)
             game.InvitePlayer(participant.UserId, participant.TeamNumber);
@@ -118,20 +142,70 @@ public class GameService : IGameService
             .ToList();
     }
 
+    public async Task<bool> IsCourtOccupiedAsync(Guid courtId, DateTime date, TimeSpan startTime, CancellationToken ct = default)
+    {
+        if (courtId == Guid.Empty)
+        throw new BadRequestException("O campo é obrigatório.");
+
+    if (date == default || date.TimeOfDay != TimeSpan.Zero)
+        throw new BadRequestException(
+            "Indica uma data válida, sem componente de hora.");
+
+    if (startTime < TimeSpan.Zero ||
+        startTime >= TimeSpan.FromDays(1))
+    {
+        throw new BadRequestException(
+            "A hora deve estar entre 00:00:00 e 23:59:59.");
+    }
+
+    if (startTime.Ticks % TimeSpan.TicksPerSecond != 0)
+        throw new BadRequestException(
+            "A hora não pode incluir frações de segundo.");
+
+    var scheduledAt = DateTime.SpecifyKind(
+        date.Date.Add(startTime),
+        DateTimeKind.Utc);
+
+        return await _gameRepository.IsCourtOccupiedAsync(
+            courtId,
+            scheduledAt,
+            ct);
+    }
+
     private async Task<Domain.Entities.Game> GetGameOrThrow(Guid gameId, CancellationToken ct)
     {
         var game = await _gameRepository.GetByIdAsync(gameId, ct);
 
         if (game is null)
-            throw new KeyNotFoundException($"Não foi encontrado nenhum jogo com o Id '{gameId}'.");
+            throw new NotFoundException($"Não foi encontrado nenhum jogo com o Id '{gameId}'.");
 
         return game;
     }
 
+    public async Task<GameDto> StartGameAsync(Guid gameId, CancellationToken ct = default)
+    {
+        var game = await GetGameOrThrow(gameId, ct);
+
+        try
+        {
+            game.Start();
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new BadRequestException(ex.Message);
+        }
+
+        await _gameRepository.UpdateAsync(game, ct);
+
+        return ToDto(game);
+    }
+
+
+
     private static GameDto ToDto(Domain.Entities.Game game) => new(
         game.Id,
         game.BookingId,
-        game.FacilityId,
+        game.CourtId,
         game.ScheduledAt,
         game.Status.ToString(),
         game.WinningTeam,

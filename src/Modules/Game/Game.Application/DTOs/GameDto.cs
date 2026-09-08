@@ -3,7 +3,7 @@ namespace Game.Application.DTOs;
 public record GameDto(
     Guid Id,
     Guid BookingId,
-    Guid FacilityId,
+    Guid CourtId,
     DateTime ScheduledAt,
     string Status,
     int? WinningTeam,

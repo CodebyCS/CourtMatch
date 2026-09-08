@@ -1,5 +1,6 @@
 ﻿using Game.Domain.Entities;
 
+
 namespace Game.Domain.Repositories;
 
 public interface IGameRepository
@@ -10,4 +11,6 @@ public interface IGameRepository
     Task<bool> ExistsForBookingAsync(Guid bookingId, CancellationToken ct = default);
     Task AddAsync(Entities.Game game, CancellationToken ct = default);
     Task UpdateAsync(Entities.Game game, CancellationToken ct = default);
+
+    Task<bool> IsCourtOccupiedAsync(Guid courtId, DateTime scheduledAt, CancellationToken ct = default);
 }

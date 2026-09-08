@@ -1,6 +1,8 @@
 using Game.Application.DTOs;
 using Game.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Shared.Contracts.Game;
 
 namespace Game.API.Controllers;
 
@@ -67,5 +69,40 @@ public class GamesController : ControllerBase
     {
         var history = await _gameService.GetHistoryByUserIdAsync(userId, ct);
         return Ok(history);
+    }
+
+    [HttpGet("courts/{courtId:guid}/occupied")]
+[ProducesResponseType(
+    typeof(CourtOccupiedResponse),
+    StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<ActionResult<CourtOccupiedResponse>> IsCourtOccupied(
+    Guid courtId,
+    [FromQuery, BindRequired] DateTime date,
+    [FromQuery, BindRequired] TimeSpan startTime,
+    CancellationToken ct)
+    {
+        var isOccupied = await _gameService.IsCourtOccupiedAsync(
+            courtId,
+            date,
+            startTime,
+            ct);
+
+        return Ok(new CourtOccupiedResponse
+        {
+            IsOccupied = isOccupied
+        });
+    }
+
+    [HttpPost("{gameId:guid}/start")]
+    [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GameDto>> Start(
+        Guid gameId,
+        CancellationToken ct)
+    {
+        var game = await _gameService.StartGameAsync(gameId, ct);
+        return Ok(game);
     }
 }
