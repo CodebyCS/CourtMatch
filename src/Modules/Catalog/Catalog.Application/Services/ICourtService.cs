@@ -1,10 +1,10 @@
 ﻿using Catalog.Application.DTOs;
-using Shared.Contracts.Catalog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Contracts.Catalog;
 
 namespace Catalog.Application.Services
 {

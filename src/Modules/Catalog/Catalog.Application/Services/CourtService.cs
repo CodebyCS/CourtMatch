@@ -4,6 +4,7 @@ using Catalog.Domain.Entities;
 using Catalog.Domain.Repositories;
 using FluentValidation;
 using Shared.Contracts.Exceptions;
+using Shared.Contracts.Catalog;
 
 namespace Catalog.Application.Services
 {
@@ -154,6 +155,36 @@ namespace Catalog.Application.Services
                 IsIndoor = court.IsIndoor,
                 PricePerHour = court.PricePerHour,
                 Status = court.Status
+            };
+        }
+
+        public async Task<AvailabilityResponse> CheckAvailabilityAsync(
+    Guid courtId,
+    DateTime date,
+    TimeSpan startTime,
+    CancellationToken cancellationToken)
+        {
+            var court = await _courtRepository.GetByIdAsync(courtId, cancellationToken);
+            if (court is null)
+                throw new NotFoundException("Court not found.");
+            // Se o campo estiver em manutenção, está indisponível
+            if (court.Status == CourtStatus.UnderMaintenance)
+            {
+                return new AvailabilityResponse
+                {
+                    CourtId = court.Id,
+                    IsAvailable = false,
+                    PricePerHour = court.PricePerHour
+                };
+            }
+            // NOTA DE INTEGRAÇÃO:
+            // Quando a Game.API estiver concluída, faremos aqui a chamada HTTP
+            // para verificar se existe algum jogo marcado nesta data/hora.
+            return new AvailabilityResponse
+            {
+                CourtId = court.Id,
+                IsAvailable = true,
+                PricePerHour = court.PricePerHour
             };
         }
 

@@ -25,7 +25,7 @@ namespace FacilitiesCatalog.API.Controllers
 
         // GET: /api/courts/{id}
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById (Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
             var court = await _courtService.GetCourtByIdAsync(id, cancellationToken);
 
@@ -66,6 +66,23 @@ namespace FacilitiesCatalog.API.Controllers
             await _courtService.BlockCourtAsync(id, cancellationToken);
 
             return NoContent();
+        }
+
+        // GET: /api/courts/{id}/availability?date=2026-09-10&startTime=18:00:00
+        [HttpGet("{id:guid}/availability")]
+        public async Task<IActionResult> CheckAvailability(
+            Guid id,
+            [FromQuery] DateTime date,
+            [FromQuery] TimeSpan startTime,
+            CancellationToken cancellationToken)
+        {
+            var availability = await _courtService.CheckAvailabilityAsync(
+                id,
+                date,
+                startTime,
+                cancellationToken);
+
+            return Ok(availability);
         }
     }
 }
