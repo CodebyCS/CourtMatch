@@ -25,7 +25,7 @@ public class GameAvailabilityClient : IGameAvailabilityClient
             CultureInfo.InvariantCulture);
 
         var timeValue = startTime.ToString(
-            "HH:mm:ss",
+            @"hh\:mm\:ss",
             CultureInfo.InvariantCulture);
 
         var url =
