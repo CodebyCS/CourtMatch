@@ -5,6 +5,7 @@ using Catalog.Domain.Repositories;
 using FluentValidation;
 using Shared.Contracts.Exceptions;
 using Shared.Contracts.Catalog;
+using Catalog.Application.Interfaces;
 
 namespace Catalog.Application.Services
 {
@@ -16,15 +17,18 @@ namespace Catalog.Application.Services
 
         private readonly IValidator<UpdateCourtRequest> _updateValidator;
 
+        private readonly IGameAvailabilityClient _gameAvailabilityClient;
+
         public CourtService(
             ICourtRepository courtRepository,
             IValidator<CreateCourtRequest> createValidator,
-            IValidator<UpdateCourtRequest> updateValidator)
+            IValidator<UpdateCourtRequest> updateValidator,
+            IGameAvailabilityClient gameAvailabilityClient)
         {
             _courtRepository = courtRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
-
+            _gameAvailabilityClient = gameAvailabilityClient;
         }
 
         public async Task<IEnumerable<CourtResponse>> GetAllCourtsAsync(CancellationToken cancellationToken)
@@ -159,34 +163,39 @@ namespace Catalog.Application.Services
         }
 
         public async Task<AvailabilityResponse> CheckAvailabilityAsync(
-    Guid courtId,
-    DateTime date,
-    TimeSpan startTime,
-    CancellationToken cancellationToken)
-        {
-            var court = await _courtRepository.GetByIdAsync(courtId, cancellationToken);
-            if (court is null)
-                throw new NotFoundException("Court not found.");
-            // Se o campo estiver em manutenção, está indisponível
-            if (court.Status == CourtStatus.UnderMaintenance)
-            {
+            Guid courtId,
+            DateTime date,
+            TimeSpan startTime,
+            CancellationToken cancellationToken)
+                {
+                    var court = await _courtRepository.GetByIdAsync(courtId, cancellationToken);
+                    if (court is null)
+                        throw new NotFoundException("Court not found.");
+
+                    // Se o campo estiver em manutenção, não está indisponível
+                    if (court.Status == CourtStatus.UnderMaintenance)
+                    {
+                        return new AvailabilityResponse
+                        {
+                            CourtId = court.Id,
+                            IsAvailable = false,
+                            PricePerHour = court.PricePerHour
+                        };
+                    }
+
+                var isOccupied = await _gameAvailabilityClient.IsCourtOccupiedAsync(
+                    courtId,
+                    date,
+                    startTime,
+                    cancellationToken);
+                    
                 return new AvailabilityResponse
                 {
                     CourtId = court.Id,
-                    IsAvailable = false,
+                    IsAvailable = !isOccupied,
                     PricePerHour = court.PricePerHour
                 };
             }
-            // NOTA DE INTEGRAÇÃO:
-            // Quando a Game.API estiver concluída, faremos aqui a chamada HTTP
-            // para verificar se existe algum jogo marcado nesta data/hora.
-            return new AvailabilityResponse
-            {
-                CourtId = court.Id,
-                IsAvailable = true,
-                PricePerHour = court.PricePerHour
-            };
-        }
 
     }
 }
