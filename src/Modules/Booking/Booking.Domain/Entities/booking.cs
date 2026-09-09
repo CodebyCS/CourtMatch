@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Booking.Domain.Enums;
@@ -94,13 +94,28 @@ namespace Booking.Domain.Entities
             Status = BookingStatus.Cancelled;
         }
 
-        public void UpdateSchedule(DateTime newStartTime, DateTime newEndTime)
+        public void UpdateSchedule(
+            DateTime newStartTime,
+            DateTime newEndTime,
+            decimal newCourtPrice)
         {
+            if (Status != BookingStatus.Pending)
+            {
+                throw new InvalidOperationException(
+                    "Só é possível alterar uma reserva pendente.");
+            }
+
             if (newEndTime <= newStartTime)
-                throw new ArgumentException("O horário de fim tem de ser posterior ao horário de início.");
+            {
+                throw new ArgumentException(
+                    "O horário de fim tem de ser posterior ao horário de início.");
+            }
 
             StartTime = newStartTime;
             EndTime = newEndTime;
+            CourtPrice = newCourtPrice;
+
+            RecalculateTotalPrice();
         }
     }
 }

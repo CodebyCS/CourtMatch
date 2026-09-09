@@ -3,10 +3,14 @@ using System.Threading.Tasks;
 using Booking.Application.DTOs;
 using Booking.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Shared.Contracts.Exceptions;
 
 namespace Booking.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class BookingsController : ControllerBase
     {
@@ -23,8 +27,16 @@ namespace Booking.API.Controllers
         {
             try
             {
-                var bookingId = await _bookingService.CreateBookingAsync(dto);
-                return CreatedAtAction(nameof(GetBookingById), new { id = bookingId }, new { id = bookingId });
+                 var userId = GetCurrentUserId();
+
+            var bookingId = await _bookingService.CreateBookingAsync(
+                dto,
+                userId);
+
+            return CreatedAtAction(
+                nameof(GetBookingById),
+                new { id = bookingId },
+                new { id = bookingId });
             }
             catch (ArgumentException ex)
             {
@@ -61,13 +73,23 @@ namespace Booking.API.Controllers
             return BadRequest(new { message = "Informe courtId, ou startDate e endDate." });
         }
 
+        // GET /api/bookings/my
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyBookings()
+        {
+            var userId = GetCurrentUserId();
+
+            var bookings = await _bookingService.GetMyBookingsAsync(userId);
+
+            return Ok(bookings);
+        }
+
         // READ
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBookingById(Guid id)
         {
             var booking = await _bookingService.GetBookingByIdAsync(id);
-            if (booking == null) return NotFound();
-
+            
             return Ok(booking);
         }
 
@@ -162,6 +184,20 @@ namespace Booking.API.Controllers
             if (updatedBooking == null) return NotFound();
 
             return Ok(updatedBooking);
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            var subject = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue("sub");
+
+            if (!Guid.TryParse(subject, out var userId))
+            {
+                throw new UnauthorizedAppException(
+                    "O token não contém um identificador de utilizador válido.");
+            }
+
+            return userId;
         }
     }
 }

@@ -14,5 +14,7 @@ namespace Booking.Domain.Repositories
         void Update(Entities.Booking booking);
         void Delete(Entities.Booking booking);
         Task<int> GetRentedEquipmentCountAsync(Guid equipmentId, DateTime startTime, DateTime endTime);
+        Task<IEnumerable<Entities.Booking>> GetByHostPlayerIdAsync(Guid hostPlayerId);
+        Task<bool> HasOverlapAsync(Guid courtId, DateTime startTime, DateTime endTime, Guid? excludedBookingId = null);
     }
 }

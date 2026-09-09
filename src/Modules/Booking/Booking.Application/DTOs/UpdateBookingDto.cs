@@ -4,7 +4,7 @@ namespace Booking.Application.DTOs
 {
     public record UpdateBookingDto(
         DateTime StartTime,
-        DateTime EndTime,
-        decimal CourtPrice
+        DateTime EndTime
+        // decimal CourtPrice ----> Cliente não escolhe preço
     );
 }

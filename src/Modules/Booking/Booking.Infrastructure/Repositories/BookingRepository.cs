@@ -90,5 +90,29 @@ namespace Booking.Infrastructure.Repositories
                 .Where(b => b.StartTime < endDate && b.EndTime > startDate)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Domain.Entities.Booking>> GetByHostPlayerIdAsync(Guid hostPlayerId)
+        {
+            return await _context.Bookings
+                .Include(booking => booking.Equipments)
+                .Where(booking => booking.HostPlayerId == hostPlayerId)
+                .OrderByDescending(booking => booking.StartTime)
+                .ToListAsync();
+        }
+
+        public async Task<bool> HasOverlapAsync(
+            Guid courtId,
+            DateTime startTime,
+            DateTime endTime,
+            Guid? excludedBookingId = null)
+        {
+            return await _context.Bookings.AnyAsync(booking =>
+                booking.CourtId == courtId &&
+                booking.Status != Domain.Enums.BookingStatus.Cancelled &&
+                booking.StartTime < endTime &&
+                booking.EndTime > startTime &&
+                (!excludedBookingId.HasValue ||
+                booking.Id != excludedBookingId.Value));
+        }
     }
 }

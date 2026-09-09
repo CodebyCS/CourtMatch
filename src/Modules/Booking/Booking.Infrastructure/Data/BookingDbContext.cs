@@ -21,6 +21,13 @@ namespace Booking.Infrastructure.Data
             {
                 entity.HasKey(b => b.Id);
 
+                entity.HasIndex(b => new
+                {
+                    b.CourtId,
+                    b.StartTime,
+                    b.EndTime
+                });
+
                 entity.Property(b => b.CourtId).IsRequired();
                 entity.Property(b => b.HostPlayerId).IsRequired();
 

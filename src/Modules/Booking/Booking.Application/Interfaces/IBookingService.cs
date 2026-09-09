@@ -7,7 +7,7 @@ namespace Booking.Application.Interfaces
 {
     public interface IBookingService
     {
-        Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto);
+        Task<Guid> CreateBookingAsync(CreateBookingDto createBookingDto, Guid hostPlayerId);
         Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
         Task<BookingDto> UpdateBookingAsync(Guid bookingId, UpdateBookingDto updateBookingDto);
         Task<bool> DeleteBookingAsync(Guid bookingId);
@@ -16,6 +16,7 @@ namespace Booking.Application.Interfaces
         Task<BookingDto> ConfirmBookingAsync(Guid bookingId);
         Task<BookingDto> CancelBookingAsync(Guid bookingId);
         Task<IEnumerable<BookingDto>> GetBookingsByCourtAsync(Guid courtId);
+        Task<IEnumerable<BookingDto>> GetMyBookingsAsync(Guid hostPlayerId);
         Task<IEnumerable<BookingDto>> GetBookingsByDateRangeAsync(DateTime startDate, DateTime endDate);
     }
 }
