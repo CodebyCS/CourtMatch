@@ -105,4 +105,18 @@ public async Task<ActionResult<CourtOccupiedResponse>> IsCourtOccupied(
         var game = await _gameService.StartGameAsync(gameId, ct);
         return Ok(game);
     }
+
+    // POST /api/games/{gameId}/cancel
+    [HttpPost("{gameId:guid}/cancel")]
+    [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GameDto>> Cancel(
+        Guid gameId,
+        CancellationToken ct)
+    {
+        var game = await _gameService.CancelGameAsync(gameId, ct);
+
+        return Ok(game);
+}
 }

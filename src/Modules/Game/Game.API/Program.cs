@@ -5,18 +5,29 @@ using Game.Domain.Repositories;
 using Game.Infrastructure.Data;
 using Game.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using Game.Application.Validators;
+using Shared.Contracts.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Base de dados (Supabase = Postgres, via Npgsql) ---
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "A connection string 'DefaultConnection' não foi configurada.");
+
 builder.Services.AddDbContext<GameDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(
+        connectionString,
+        npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory_Game")));
 
 // --- Injeção de dependência ---
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IPlayerRankingRepository, PlayerRankingRepository>();
 builder.Services.AddScoped<IGameService, GameService>();
+
+// Validações
+builder.Services.AddValidatorsFromAssemblyContaining<CreateGameDtoValidator>();
 
 // --- Tratamento global de exceções ---
 builder.Services.AddProblemDetails();
@@ -41,15 +52,17 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+builder.Services.AddGlobalExceptionHandling();
+
 var app = builder.Build();
+
+app.UseGlobalExceptionHandling();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseExceptionHandler();
 
 app.UseCors("DefaultCors");
 app.UseHttpsRedirection();
