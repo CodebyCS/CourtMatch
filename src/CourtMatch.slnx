@@ -17,10 +17,10 @@
     <Project Path="Modules/Catalog/FacilitiesCatalog.API/FacilitiesCatalog.API.csproj" />
   </Folder>
   <Folder Name="/Modules/Game/">
-    <Project Path="Modules/Game/Game.Infrastructure/Game.Infrastructure.csproj" />
     <Project Path="Modules/Game/Game.API/Game.API.csproj" />
     <Project Path="Modules/Game/Game.Application/Game.Application.csproj" />
     <Project Path="Modules/Game/Game.Domain/Game.Domain.csproj" />
+    <Project Path="Modules/Game/Game.Infrastructure/Game.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
     <Project Path="Modules/Identity/Identity.API/Identity.API.csproj" />
