@@ -81,7 +81,7 @@ namespace Booking.Application.Services
             return booking.Id;
         }
 
-        public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId)
+        public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId, Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
 
@@ -90,19 +90,24 @@ namespace Booking.Application.Services
                 throw new NotFoundException("Reserva não encontrada.");
             }
 
+            EnsureBookingOwner(booking, userId);
+
             return MapToDto(booking);
         }
 
         public async Task<BookingDto> UpdateBookingAsync(
             Guid bookingId,
-            UpdateBookingDto updateBookingDto)
+            UpdateBookingDto updateBookingDto,
+            Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
 
             if (booking is null)
             {
-                throw new ArgumentException("A reserva não existe.");
+                throw new NotFoundException("Reserva não encontrada.");
             }
+
+            EnsureBookingOwner(booking, userId);
 
             if (updateBookingDto.StartTime < DateTime.UtcNow)
             {
@@ -160,19 +165,31 @@ namespace Booking.Application.Services
             return MapToDto(booking);
         }
 
-        public async Task<bool>DeleteBookingAsync(Guid bookingId)
+        public async Task<bool> DeleteBookingAsync(
+            Guid bookingId,
+            Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking == null) return false;
+
+            if (booking is null)
+            {
+                return false;
+            }
+
+            EnsureBookingOwner(booking, userId);
 
             _bookingRepository.Delete(booking);
+
             return true;
         }
 
-        public async Task<BookingDto> AddEquipmentAsync(Guid bookingId, AddBookingEquipmentDto addEquipmentDto)
+        public async Task<BookingDto> AddEquipmentAsync(Guid bookingId, AddBookingEquipmentDto addEquipmentDto, Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking == null) return null;
+            if (booking is null)
+                throw new NotFoundException("Reserva não encontrada.");
+
+            EnsureBookingOwner(booking, userId);
 
             booking.AddEquipment(addEquipmentDto.EquipmentId, addEquipmentDto.Quantity, addEquipmentDto.UnitPrice);
 
@@ -181,10 +198,13 @@ namespace Booking.Application.Services
             return MapToDto(booking);
         }
 
-        public async Task<BookingDto> RemoveEquipmentAsync(Guid bookingId, Guid equipmentId)
+        public async Task<BookingDto> RemoveEquipmentAsync(Guid bookingId, Guid equipmentId, Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking == null) return null;
+            if (booking is null)
+                throw new NotFoundException("Reserva não encontrada.");
+
+            EnsureBookingOwner(booking, userId);
 
             booking.RemoveEquipment(equipmentId);
 
@@ -193,10 +213,16 @@ namespace Booking.Application.Services
             return MapToDto(booking);
         }
 
-        public async Task<BookingDto> ConfirmBookingAsync(Guid bookingId)
+        public async Task<BookingDto> ConfirmBookingAsync(Guid bookingId, Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking == null) return null;
+
+            if (booking is null)
+            {
+                throw new NotFoundException("Reserva não encontrada.");
+            }
+
+            EnsureBookingOwner(booking, userId);
 
             booking.PaymentCompleted();
 
@@ -205,10 +231,16 @@ namespace Booking.Application.Services
             return MapToDto(booking);
         }
 
-        public async Task<BookingDto> CancelBookingAsync(Guid bookingId)
+        public async Task<BookingDto> CancelBookingAsync(Guid bookingId, Guid userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking == null) return null;
+
+            if (booking is null)
+            {
+                throw new NotFoundException("Reserva não encontrada.");
+            }
+
+            EnsureBookingOwner(booking, userId);
 
             booking.PaymentCancelled();
 
@@ -234,6 +266,17 @@ namespace Booking.Application.Services
             var bookings = await _bookingRepository.GetBookingsByDateRangeAsync(startDate, endDate);
 
             return bookings.Select(MapToDto).ToList();
+        }
+
+        private static void EnsureBookingOwner(
+            Domain.Entities.Booking booking,
+            Guid userId)
+        {
+            if (booking.HostPlayerId != userId)
+            {
+                throw new ForbiddenException(
+                    "Não tens permissão para aceder a esta reserva.");
+            }
         }
 
         private static BookingDto MapToDto(Domain.Entities.Booking booking)

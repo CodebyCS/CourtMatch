@@ -15,7 +15,7 @@ namespace Booking.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Domain.Entities.Booking> GetByIdAsync(Guid id)
+        public async Task<Domain.Entities.Booking?> GetByIdAsync(Guid id)
         {
             return await _context.Bookings
                 .Include(b => b.Equipments)
