@@ -1,6 +1,7 @@
 ﻿using Catalog.Application.DTOs;
 using Catalog.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FacilitiesCatalog.API.Controllers
 {
@@ -16,6 +17,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // GET: /api/courts
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -24,6 +26,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // GET: /api/courts/{id}
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
@@ -33,6 +36,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // POST: /api/courts
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCourtRequest request, CancellationToken cancellationToken)
         {
@@ -42,6 +46,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // PUT: /api/courts/{id}
+        [Authorize(Roles = "Manager")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCourtRequest request, CancellationToken cancellationToken)
         {
@@ -50,6 +55,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // DELETE: /api/courts/{id}
+        [Authorize(Roles = "Manager")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
@@ -58,6 +64,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // PATCH: /api/courts/{id}/block
+        [Authorize(Roles = "Manager")]
         [HttpPatch("{id:guid}/block")]
         public async Task<IActionResult> Block(
             Guid id,
@@ -69,6 +76,7 @@ namespace FacilitiesCatalog.API.Controllers
         }
 
         // GET: /api/courts/{id}/availability?date=2026-09-10&startTime=18:00:00
+        [AllowAnonymous]
         [HttpGet("{id:guid}/availability")]
         public async Task<IActionResult> CheckAvailability(
             Guid id,
