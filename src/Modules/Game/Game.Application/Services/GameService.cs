@@ -14,11 +14,15 @@ public class GameService : IGameService
 
     private readonly IValidator<CreateGameDto> _createValidator;
 
-    public GameService(IGameRepository gameRepository, IPlayerRankingRepository rankingRepository,  IValidator<CreateGameDto> createValidator)
+    private readonly IValidator<RegisterResultDto> _registerResultValidator;
+
+    public GameService(IGameRepository gameRepository, IPlayerRankingRepository rankingRepository,  IValidator<CreateGameDto> createValidator, IValidator<RegisterResultDto> registerResultValidator)
     {
         _gameRepository = gameRepository;
         _rankingRepository = rankingRepository;
         _createValidator = createValidator;
+        _registerResultValidator = registerResultValidator;
+
     }
 
     public async Task<GameDto> CreateGameAsync(CreateGameDto dto, CancellationToken ct = default)
@@ -48,7 +52,10 @@ public class GameService : IGameService
         var game = new Domain.Entities.Game(dto.BookingId, dto.CourtId, dto.ScheduledAt);
 
         foreach (var participant in dto.Participants)
-            game.InvitePlayer(participant.UserId, participant.TeamNumber);
+        {
+            ExecuteDomainOperation(() =>
+                game.InvitePlayer(participant.UserId, participant.TeamNumber));
+        }
 
         await _gameRepository.AddAsync(game, ct);
         return ToDto(game);
@@ -63,7 +70,8 @@ public class GameService : IGameService
     public async Task<GameDto> InvitePlayerAsync(Guid gameId, InvitePlayerDto dto, CancellationToken ct = default)
     {
         var game = await GetGameOrThrow(gameId, ct);
-        game.InvitePlayer(dto.UserId, dto.TeamNumber);
+        ExecuteDomainOperation(() =>
+            game.InvitePlayer(dto.UserId, dto.TeamNumber));
 
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
@@ -72,7 +80,8 @@ public class GameService : IGameService
     public async Task<GameDto> ConfirmParticipantAsync(Guid gameId, Guid userId, CancellationToken ct = default)
     {
         var game = await GetGameOrThrow(gameId, ct);
-        game.ConfirmParticipant(userId);
+        ExecuteDomainOperation(() =>
+            game.ConfirmParticipant(userId));
 
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
@@ -81,7 +90,8 @@ public class GameService : IGameService
     public async Task<GameDto> DeclineParticipantAsync(Guid gameId, Guid userId, CancellationToken ct = default)
     {
         var game = await GetGameOrThrow(gameId, ct);
-        game.DeclineParticipant(userId);
+        ExecuteDomainOperation(() =>
+            game.DeclineParticipant(userId));
 
         await _gameRepository.UpdateAsync(game, ct);
         return ToDto(game);
@@ -89,6 +99,13 @@ public class GameService : IGameService
 
     public async Task<GameDto> RegisterResultAsync(Guid gameId, RegisterResultDto dto, CancellationToken ct = default)
     {
+        var validation = await _registerResultValidator.ValidateAsync(dto, ct);
+
+        if (!validation.IsValid)
+        {
+            throw new BadRequestException(
+                string.Join("; ", validation.Errors.Select(error => error.ErrorMessage)));
+        }
         var game = await GetGameOrThrow(gameId, ct);
 
         var sets = dto.Sets
@@ -101,7 +118,7 @@ public class GameService : IGameService
                 s.TieBreakTeamTwo))
             .ToList();
 
-        game.RegisterResult(sets);
+        ExecuteDomainOperation(() => game.RegisterResult(sets));
         await _gameRepository.UpdateAsync(game, ct);
 
         foreach (var participant in game.Participants)
@@ -186,18 +203,42 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
 
+        ExecuteDomainOperation(game.Cancel);
+
+        await _gameRepository.UpdateAsync(game, ct);
+
+        return ToDto(game);
+    }
+
+    public async Task<GameDto> CancelGameAsync(Guid gameId, CancellationToken ct = default)
+    {
+        var game = await GetGameOrThrow(gameId, ct);
+
+        ExecuteDomainOperation(game.Cancel);
+
+        await _gameRepository.UpdateAsync(game, ct);
+
+        return ToDto(game);
+    }
+
+    private static void ExecuteDomainOperation(Action operation)
+    {
         try
         {
-            game.Start();
+            operation();
+        }
+        catch (ArgumentException ex)
+        {
+            throw new BadRequestException(ex.Message);
         }
         catch (InvalidOperationException ex)
         {
             throw new BadRequestException(ex.Message);
         }
-
-        await _gameRepository.UpdateAsync(game, ct);
-
-        return ToDto(game);
+        catch (KeyNotFoundException ex)
+        {
+            throw new NotFoundException(ex.Message);
+        }
     }
 
 

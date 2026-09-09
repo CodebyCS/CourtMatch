@@ -16,12 +16,19 @@ public class GameDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Domain.Entities.Game>(entity =>
         {
             entity.ToTable("games");
             entity.HasKey(g => g.Id);
             entity.Property(g => g.Status).HasConversion<string>().HasMaxLength(30);
             entity.HasIndex(g => g.BookingId).IsUnique();
+
+            entity.HasIndex(g => new { g.CourtId, g.ScheduledAt })
+                .IsUnique()
+                .HasDatabaseName("ux_games_court_scheduled_at")
+                .HasFilter("\"Status\" <> 'Cancelled'");
 
             entity.HasMany(g => g.Participants)
                 .WithOne()

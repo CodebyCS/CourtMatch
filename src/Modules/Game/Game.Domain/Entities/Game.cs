@@ -155,9 +155,11 @@ public class Game
 
     public void Cancel()
     {
-        if (Status == GameStatus.Completed)
+        if (Status is GameStatus.Completed or GameStatus.Cancelled)
+        {
             throw new InvalidOperationException(
-                "Não é possível cancelar um jogo já concluído.");
+                "Não é possível cancelar um jogo concluído ou já cancelado.");
+        }
 
         Status = GameStatus.Cancelled;
     }

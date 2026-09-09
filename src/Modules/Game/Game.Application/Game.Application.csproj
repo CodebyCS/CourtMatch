@@ -7,5 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Game.Domain\Game.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
   </ItemGroup>
 </Project>
