@@ -45,6 +45,7 @@ namespace Booking.API.Controllers
         }
 
         // LIST — por quadra (?courtId=) ou por intervalo (?startDate=&endDate=)
+        [Authorize(Roles = "Manager")]
         [HttpGet]
         public async Task<IActionResult> GetBookings(
             [FromQuery] Guid? courtId,
@@ -84,11 +85,15 @@ namespace Booking.API.Controllers
             return Ok(bookings);
         }
 
-        // READ
+        // GET /api/Bookings/{id}
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBookingById(Guid id)
         {
-            var booking = await _bookingService.GetBookingByIdAsync(id);
+            var userId = GetCurrentUserId();
+
+            var booking = await _bookingService.GetBookingByIdAsync(
+                id,
+                userId);
             
             return Ok(booking);
         }
@@ -99,8 +104,12 @@ namespace Booking.API.Controllers
         {
             try
             {
-                var updatedBooking = await _bookingService.UpdateBookingAsync(id, dto);
-                if (updatedBooking == null) return NotFound();
+                var userId = GetCurrentUserId();
+
+                var updatedBooking = await _bookingService.UpdateBookingAsync(
+                    id,
+                    dto,
+                    userId);
 
                 return Ok(updatedBooking);
             }
@@ -114,7 +123,11 @@ namespace Booking.API.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteBooking(Guid id)
         {
-            var success = await _bookingService.DeleteBookingAsync(id);
+            var userId = GetCurrentUserId();
+
+            var success = await _bookingService.DeleteBookingAsync(
+                id,
+                userId);
             if (!success) return NotFound();
 
             return NoContent();
@@ -124,64 +137,52 @@ namespace Booking.API.Controllers
         [HttpPatch("{id:guid}/confirm")]
         public async Task<IActionResult> ConfirmBooking(Guid id)
         {
-            try
-            {
-                var booking = await _bookingService.ConfirmBookingAsync(id);
-                if (booking == null) return NotFound();
+            var userId = GetCurrentUserId();
 
-                return Ok(booking);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // A reserva não está Pending — transição de estado inválida.
-                return Conflict(new { message = ex.Message });
-            }
+            var booking = await _bookingService.ConfirmBookingAsync(
+                id,
+                userId);
+
+            return Ok(booking);
         }
 
         // CANCEL
         [HttpPatch("{id:guid}/cancel")]
         public async Task<IActionResult> CancelBooking(Guid id)
         {
-            try
-            {
-                var booking = await _bookingService.CancelBookingAsync(id);
-                if (booking == null) return NotFound();
+            var userId = GetCurrentUserId();
 
-                return Ok(booking);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            var booking = await _bookingService.CancelBookingAsync(
+                id,
+                userId);
+
+            return Ok(booking);
         }
 
         // ADD EQUIPMENT
         [HttpPost("{id:guid}/equipments")]
         public async Task<IActionResult> AddEquipment(Guid id, [FromBody] AddBookingEquipmentDto dto)
         {
-            try
-            {
-                var updatedBooking = await _bookingService.AddEquipmentAsync(id, dto);
-                if (updatedBooking == null) return NotFound();
+            var userId = GetCurrentUserId();
 
-                return Ok(updatedBooking);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var updatedBooking = await _bookingService.AddEquipmentAsync(
+                id,
+                dto,
+                userId);
+
+            return Ok(updatedBooking);
         }
 
         // REMOVE EQUIPMENT
         [HttpDelete("{id:guid}/equipments/{equipmentId:guid}")]
         public async Task<IActionResult> RemoveEquipment(Guid id, Guid equipmentId)
         {
-            var updatedBooking = await _bookingService.RemoveEquipmentAsync(id, equipmentId);
-            if (updatedBooking == null) return NotFound();
+            var userId = GetCurrentUserId();
+
+            var updatedBooking = await _bookingService.RemoveEquipmentAsync(
+                id,
+                equipmentId,
+                userId);
 
             return Ok(updatedBooking);
         }

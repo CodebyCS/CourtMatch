@@ -7,7 +7,7 @@ namespace Booking.Domain.Repositories
 {
     public interface IBookingRepository
     {
-        Task<Entities.Booking> GetByIdAsync(Guid id);
+        Task<Entities.Booking?> GetByIdAsync(Guid id);
         Task<IEnumerable<Entities.Booking>> GetByCourtIdAsync(Guid courtId);
         Task<IEnumerable<Entities.Booking>> GetBookingsByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task AddAsync(Entities.Booking booking);
