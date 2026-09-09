@@ -203,7 +203,7 @@ public class GameService : IGameService
     {
         var game = await GetGameOrThrow(gameId, ct);
 
-        ExecuteDomainOperation(game.Cancel);
+        ExecuteDomainOperation(game.Start);
 
         await _gameRepository.UpdateAsync(game, ct);
 
