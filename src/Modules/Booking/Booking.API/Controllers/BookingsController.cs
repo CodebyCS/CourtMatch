@@ -21,22 +21,28 @@ namespace Booking.API.Controllers
             _bookingService = bookingService;
         }
 
-        // CREATE
+        /// <summary>
+        /// Creates a new booking.
+        /// </summary>
+        /// <param name="dto">Data required to create the booking (court, schedule, etc.).</param>
+        /// <returns>Returns the route to the newly created booking.</returns>
+        /// <response code="201">Booking created successfully.</response>
+        /// <response code="400">Invalid data provided or schedule conflict.</response>
         [HttpPost]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto dto)
         {
             try
             {
-                 var userId = GetCurrentUserId();
+                var userId = GetCurrentUserId();
 
-            var bookingId = await _bookingService.CreateBookingAsync(
-                dto,
-                userId);
+                var bookingId = await _bookingService.CreateBookingAsync(
+                    dto,
+                    userId);
 
-            return CreatedAtAction(
-                nameof(GetBookingById),
-                new { id = bookingId },
-                new { id = bookingId });
+                return CreatedAtAction(
+                    nameof(GetBookingById),
+                    new { id = bookingId },
+                    new { id = bookingId });
             }
             catch (ArgumentException ex)
             {
@@ -44,7 +50,15 @@ namespace Booking.API.Controllers
             }
         }
 
-        // LIST — por quadra (?courtId=) ou por intervalo (?startDate=&endDate=)
+        /// <summary>
+        /// Lists bookings. Allows filtering by a specific court or a date range. (Restricted to Managers).
+        /// </summary>
+        /// <param name="courtId">Unique identifier of the court (optional).</param>
+        /// <param name="startDate">Start date of the range (optional).</param>
+        /// <param name="endDate">End date of the range (optional).</param>
+        /// <returns>Returns a list of bookings matching the search criteria.</returns>
+        /// <response code="200">List of bookings returned successfully.</response>
+        /// <response code="400">No valid search criteria provided or invalid dates.</response>
         [Authorize(Roles = "Manager")]
         [HttpGet]
         public async Task<IActionResult> GetBookings(
@@ -71,21 +85,29 @@ namespace Booking.API.Controllers
                 }
             }
 
-            return BadRequest(new { message = "Informe courtId, ou startDate e endDate." });
+            return BadRequest(new { message = "Provide either courtId, or both startDate and endDate." });
         }
 
-        // GET /api/bookings/my
+        /// <summary>
+        /// Retrieves all bookings associated with the currently authenticated user.
+        /// </summary>
+        /// <returns>Returns the list of user bookings.</returns>
+        /// <response code="200">List of bookings returned successfully.</response>
         [HttpGet("my")]
         public async Task<IActionResult> GetMyBookings()
         {
             var userId = GetCurrentUserId();
-
             var bookings = await _bookingService.GetMyBookingsAsync(userId);
-
             return Ok(bookings);
         }
 
-        // GET /api/Bookings/{id}
+        /// <summary>
+        /// Retrieves the details of a specific booking by its identifier.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking.</param>
+        /// <returns>Returns the detailed data of the specified booking.</returns>
+        /// <response code="200">Booking found and returned successfully.</response>
+        /// <response code="404">Booking not found or does not belong to the user.</response>
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBookingById(Guid id)
         {
@@ -94,11 +116,18 @@ namespace Booking.API.Controllers
             var booking = await _bookingService.GetBookingByIdAsync(
                 id,
                 userId);
-            
+
             return Ok(booking);
         }
 
-        // UPDATE
+        /// <summary>
+        /// Updates an existing booking's data.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking to be updated.</param>
+        /// <param name="dto">New data for updating the booking.</param>
+        /// <returns>Returns the updated booking.</returns>
+        /// <response code="200">Booking updated successfully.</response>
+        /// <response code="400">Invalid data provided for the update.</response>
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] UpdateBookingDto dto)
         {
@@ -119,7 +148,13 @@ namespace Booking.API.Controllers
             }
         }
 
-        // DELETE
+        /// <summary>
+        /// Permanently deletes a specific booking.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking to be deleted.</param>
+        /// <returns>No content on success.</returns>
+        /// <response code="204">Booking deleted successfully.</response>
+        /// <response code="404">Booking not found.</response>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteBooking(Guid id)
         {
@@ -133,7 +168,12 @@ namespace Booking.API.Controllers
             return NoContent();
         }
 
-        // CONFIRM
+        /// <summary>
+        /// Changes the status of a booking to confirmed.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking to be confirmed.</param>
+        /// <returns>Returns the booking with the updated status.</returns>
+        /// <response code="200">Booking confirmed successfully.</response>
         [HttpPatch("{id:guid}/confirm")]
         public async Task<IActionResult> ConfirmBooking(Guid id)
         {
@@ -146,7 +186,12 @@ namespace Booking.API.Controllers
             return Ok(booking);
         }
 
-        // CANCEL
+        /// <summary>
+        /// Changes the status of a booking to canceled.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking to be canceled.</param>
+        /// <returns>Returns the booking with the status updated to canceled.</returns>
+        /// <response code="200">Booking canceled successfully.</response>
         [HttpPatch("{id:guid}/cancel")]
         public async Task<IActionResult> CancelBooking(Guid id)
         {
@@ -159,7 +204,13 @@ namespace Booking.API.Controllers
             return Ok(booking);
         }
 
-        // ADD EQUIPMENT
+        /// <summary>
+        /// Adds equipment (e.g., rackets, balls) to an existing booking.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking.</param>
+        /// <param name="dto">Details of the equipment to be added and its quantity.</param>
+        /// <returns>Returns the updated booking containing the new equipment.</returns>
+        /// <response code="200">Equipment added successfully.</response>
         [HttpPost("{id:guid}/equipments")]
         public async Task<IActionResult> AddEquipment(Guid id, [FromBody] AddBookingEquipmentDto dto)
         {
@@ -173,7 +224,13 @@ namespace Booking.API.Controllers
             return Ok(updatedBooking);
         }
 
-        // REMOVE EQUIPMENT
+        /// <summary>
+        /// Removes equipment previously associated with a booking.
+        /// </summary>
+        /// <param name="id">Unique identifier of the booking.</param>
+        /// <param name="equipmentId">Unique identifier of the equipment to be removed.</param>
+        /// <returns>Returns the updated booking without the removed equipment.</returns>
+        /// <response code="200">Equipment removed successfully.</response>
         [HttpDelete("{id:guid}/equipments/{equipmentId:guid}")]
         public async Task<IActionResult> RemoveEquipment(Guid id, Guid equipmentId)
         {
@@ -187,6 +244,11 @@ namespace Booking.API.Controllers
             return Ok(updatedBooking);
         }
 
+        /// <summary>
+        /// Extracts and validates the user ID from the current JWT token claims.
+        /// </summary>
+        /// <returns>Unique identifier (Guid) of the authenticated user.</returns>
+        /// <exception cref="UnauthorizedAppException">Thrown if the token does not contain a valid user identifier.</exception>
         private Guid GetCurrentUserId()
         {
             var subject = User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -195,7 +257,7 @@ namespace Booking.API.Controllers
             if (!Guid.TryParse(subject, out var userId))
             {
                 throw new UnauthorizedAppException(
-                    "O token não contém um identificador de utilizador válido.");
+                    "The token does not contain a valid user identifier.");
             }
 
             return userId;

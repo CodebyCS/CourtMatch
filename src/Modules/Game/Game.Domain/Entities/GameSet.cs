@@ -1,7 +1,7 @@
 ﻿namespace Game.Domain.Entities;
 
 /// <summary>
-/// Resultado de um set individual dentro de um jogo (com suporte a tie-break).
+/// Result of an individual set within a match (with tie-break support).
 /// </summary>
 public class GameSet
 {
@@ -15,6 +15,9 @@ public class GameSet
 
     protected GameSet() { } // EF Core
 
+    /// <summary>
+    /// Creates a set, validating the set number and the score (including the tie-break, when applicable).
+    /// </summary>
     public GameSet(Guid gameId, int setNumber, int teamOneGames, int teamTwoGames,
         int? tieBreakTeamOne = null, int? tieBreakTeamTwo = null)
     {
@@ -43,6 +46,10 @@ public class GameSet
         TieBreakTeamOne = tieBreakTeamOne;
         TieBreakTeamTwo = tieBreakTeamTwo;
     }
+
+    /// <summary>
+    /// Checks whether a score (and the corresponding tie-break) is valid for a set.
+    /// </summary>  
     public static bool IsValidScore(
         int teamOneGames,
         int teamTwoGames,
@@ -56,7 +63,7 @@ public class GameSet
             return false;
         }
 
-        // Os dois valores do tie-break devem ser enviados em conjunto.
+        // The two tie-break values ​​must be sent together.
         if (tieBreakTeamOne.HasValue != tieBreakTeamTwo.HasValue)
             return false;
 
@@ -69,10 +76,12 @@ public class GameSet
         if (first < 0 || second < 0 || first == second)
             return false;
 
-        // O vencedor do tie-break deve ser o vencedor do set.
+        // The winner of the tie-break must be the winner of the set.
         return (first > second) == (teamOneGames > teamTwoGames);
     }
-
+    /// <summary>
+    /// Returns the team that won the set (1 or 2).
+    /// </summary>
     public int WinningTeam()
     {
         if (TeamOneGames == TeamTwoGames)

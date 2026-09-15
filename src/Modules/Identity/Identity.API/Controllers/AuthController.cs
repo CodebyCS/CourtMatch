@@ -6,6 +6,11 @@ using Identity.API.DTOs;
 
 namespace Identity.API.Controllers;
 
+/// <summary>
+/// Controller responsible for user authentication and registration.
+/// Handles the creation of new users, assignment of roles,
+/// validation of login credentials, and JWT token generation.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
@@ -20,6 +25,14 @@ public class AuthController : ControllerBase
         _roleManager = roleManager;
         _tokenService = tokenService;
     }
+
+    /// <summary>
+    /// Registers a new user by validating the provided data, checking if the
+    /// email is already in use, creating the user, ensuring that the Player
+    /// role exists and assigning that role to the new user.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest model)
@@ -57,6 +70,14 @@ public class AuthController : ControllerBase
 
         return StatusCode(201, new { message = $"User registered successfully with role '{roleToAssign}'" });
     }
+
+    /// <summary>
+    /// Authenticates a user by validating the provided email and password.
+    /// If the credentials are valid, the user's roles are retrieved and a
+    /// JWT token is generated and returned to the client.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginRequest model)
