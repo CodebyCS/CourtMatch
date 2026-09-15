@@ -12,7 +12,7 @@ public class RankingController : ControllerBase
 
     public RankingController(IGameService gameService) => _gameService = gameService;
 
-    //Ranking dos jogadores por pontuação (top N, por omissão 20).</summary>
+    /// <summary>Ranking dos jogadores por pontuação (top N, por omissão 20).</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<PlayerRankingDto>>> GetRanking([FromQuery] int top = 20, CancellationToken ct = default)
     {

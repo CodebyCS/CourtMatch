@@ -15,6 +15,9 @@ public class GameSet
 
     protected GameSet() { } // EF Core
 
+    /// <summary>
+    /// Cria um set validando o número do set e a pontuação (incluindo tie-break, quando aplicável).
+    /// </summary>
     public GameSet(Guid gameId, int setNumber, int teamOneGames, int teamTwoGames,
         int? tieBreakTeamOne = null, int? tieBreakTeamTwo = null)
     {
@@ -43,6 +46,10 @@ public class GameSet
         TieBreakTeamOne = tieBreakTeamOne;
         TieBreakTeamTwo = tieBreakTeamTwo;
     }
+
+    /// <summary>
+    /// Verifica se uma pontuação (e respetivo tie-break) é válida para um set.
+    /// </summary>  
     public static bool IsValidScore(
         int teamOneGames,
         int teamTwoGames,
@@ -72,7 +79,9 @@ public class GameSet
         // O vencedor do tie-break deve ser o vencedor do set.
         return (first > second) == (teamOneGames > teamTwoGames);
     }
-
+    /// <summary>
+    /// Devolve a equipa vencedora do set (1 ou 2).
+    /// </summary>
     public int WinningTeam()
     {
         if (TeamOneGames == TeamTwoGames)

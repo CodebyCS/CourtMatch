@@ -37,6 +37,10 @@ public class Game
         CreatedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Convida um jogador para uma das equipas do jogo, validando estado, número de equipa
+    /// e limite de jogadores por equipa.
+    /// </summary>
     public GameParticipant InvitePlayer(Guid userId, int teamNumber)
     {
         EnsureParticipantsCanChange();
@@ -65,6 +69,9 @@ public class Game
         return participant;
     }
 
+    /// <summary>
+    /// Confirma a participação de um jogador já convidado e atualiza o estado do jogo.
+    /// </summary>
     public void ConfirmParticipant(Guid userId)
     {
         EnsureParticipantsCanChange();
@@ -76,6 +83,9 @@ public class Game
         RefreshConfirmationStatus();
     }
 
+    /// <summary>
+    /// Regista a recusa de um jogador convidado e atualiza o estado do jogo.
+    /// </summary>
     public void DeclineParticipant(Guid userId)
     {
         EnsureParticipantsCanChange();
@@ -86,6 +96,9 @@ public class Game
         RefreshConfirmationStatus();
     }
 
+    /// <summary>
+    /// Inicia o jogo, exigindo que esteja previamente confirmado por todos os jogadores.
+    /// </summary>
     public void Start()
     {
         if (Status != GameStatus.Confirmed)
@@ -153,6 +166,9 @@ public class Game
         CompletedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Cancela o jogo, desde que ainda não esteja concluído ou já cancelado.
+    /// </summary>
     public void Cancel()
     {
         if (Status is GameStatus.Completed or GameStatus.Cancelled)
