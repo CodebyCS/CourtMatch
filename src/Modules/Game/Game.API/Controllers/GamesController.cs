@@ -14,7 +14,7 @@ public class GamesController : ControllerBase
 
     public GamesController(IGameService gameService) => _gameService = gameService;
 
-    //>Cria um jogo associado a uma reserva (chamado normalmente pelo Ordering.API/Booking.API).</summary>
+    /// <summary>Cria um jogo associado a uma reserva (chamado normalmente pelo Ordering.API/Booking.API).</summary>
     [HttpPost]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status201Created)]
     public async Task<ActionResult<GameDto>> Create([FromBody] CreateGameDto dto, CancellationToken ct)
@@ -23,6 +23,7 @@ public class GamesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { gameId = game.Id }, game);
     }
 
+    /// <summary>Obtém os detalhes de um jogo pelo seu identificador.</summary>
     [HttpGet("{gameId:guid}")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<GameDto>> GetById(Guid gameId, CancellationToken ct)
@@ -31,7 +32,7 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    //Convida um jogador para uma das equipas do jogo.</summary>
+    /// <summary>Convida um jogador para uma das equipas do jogo.</summary>
     [HttpPost("{gameId:guid}/invite")]
     public async Task<ActionResult<GameDto>> Invite(Guid gameId, [FromBody] InvitePlayerDto dto, CancellationToken ct)
     {
@@ -39,7 +40,7 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    //Um jogador confirma a sua participação.</summary>
+    /// <summary>Um jogador confirma a sua participação.</summary>
     [HttpPost("{gameId:guid}/players/{userId:guid}/confirm")]
     public async Task<ActionResult<GameDto>> Confirm(Guid gameId, Guid userId, CancellationToken ct)
     {
@@ -47,7 +48,7 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    //Um jogador recusa o convite.</summary>
+    /// <summary>Um jogador recusa o convite.</summary>
     [HttpPost("{gameId:guid}/players/{userId:guid}/decline")]
     public async Task<ActionResult<GameDto>> Decline(Guid gameId, Guid userId, CancellationToken ct)
     {
@@ -55,7 +56,7 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    //Regista o resultado final (sets) do jogo e atualiza estatísticas/ranking.</summary>
+    /// <summary>Regista o resultado final (sets) do jogo e atualiza estatísticas/ranking.</summary>
     [HttpPost("{gameId:guid}/result")]
     public async Task<ActionResult<GameDto>> RegisterResult(Guid gameId, [FromBody] RegisterResultDto dto, CancellationToken ct)
     {
@@ -63,13 +64,15 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    //Histórico de jogos disputados por um utilizador.</summary>
+    /// <summary>Histórico de jogos disputados por um utilizador.</summary>
     [HttpGet("history/{userId:guid}")]
     public async Task<ActionResult<IReadOnlyList<GameDto>>> GetHistory(Guid userId, CancellationToken ct)
     {
         var history = await _gameService.GetHistoryByUserIdAsync(userId, ct);
         return Ok(history);
     }
+
+    /// <summary>Verifica se um campo está ocupado numa determinada data/hora de início.</summary>
 
     [HttpGet("courts/{courtId:guid}/occupied")]
 [ProducesResponseType(
@@ -94,6 +97,7 @@ public async Task<ActionResult<CourtOccupiedResponse>> IsCourtOccupied(
         });
     }
 
+    /// <summary>Inicia um jogo previamente criado.</summary>
     [HttpPost("{gameId:guid}/start")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,6 +111,8 @@ public async Task<ActionResult<CourtOccupiedResponse>> IsCourtOccupied(
     }
 
     // POST /api/games/{gameId}/cancel
+    /// <summary>Cancela um jogo.</summary>
+
     [HttpPost("{gameId:guid}/cancel")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

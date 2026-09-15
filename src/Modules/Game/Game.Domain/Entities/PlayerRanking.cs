@@ -12,12 +12,18 @@ public class PlayerRanking
 
     protected PlayerRanking() { } // EF Core
 
+    /// <summary>
+    /// Estatísticas e pontuação de ranking acumuladas por um jogador.
+    /// </summary>
     public PlayerRanking(Guid userId)
     {
         UserId = userId;
         LastUpdatedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Atualiza as estatísticas do jogador com o resultado de mais um jogo (vitória/derrota e sets).
+    /// </summary>
     public void RegisterGameResult(bool won, int setsWon, int setsLost)
     {
         GamesPlayed++;

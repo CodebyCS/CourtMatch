@@ -26,13 +26,18 @@ public class GameParticipant
         Status = ParticipantStatus.Invited;
         InvitedAt = DateTime.UtcNow;
     }
-
+    /// <summary>
+    /// Marca o participante como confirmado.
+    /// </summary>
     internal void Confirm()
     {
         Status = ParticipantStatus.Confirmed;
         ConfirmedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Marca o participante como tendo recusado o convite.
+    /// </summary>
     internal void Decline()
     {
         Status = ParticipantStatus.Declined;
