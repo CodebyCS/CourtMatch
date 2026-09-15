@@ -6,6 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.API.Services;
 
+/// <summary>
+/// Service responsible for generating JWT tokens for authenticated users.
+/// It includes the user's identity, email and roles in the token and
+/// signs it using the configured secret key.
+/// </summary>
 public class TokenService
 {
     private readonly IConfiguration _configuration;
@@ -15,6 +20,14 @@ public class TokenService
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Generates a signed JWT token containing the user's identity, email and roles.
+    /// The token is configured with an issuer, audience and an expiration time of four hours.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="roles"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public string GenerateToken(IdentityUser user, IList<string> roles)
     {
         var secretKey = _configuration["JwtSettings:Secret"];
