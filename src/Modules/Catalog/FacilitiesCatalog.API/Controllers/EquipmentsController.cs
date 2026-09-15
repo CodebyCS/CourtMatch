@@ -15,6 +15,7 @@ namespace FacilitiesCatalog.API.Controllers
             _equipmentService = equipmentService;
         }
 
+        /// <summary>Lists all equipment in the catalog.</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -22,6 +23,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>Creates a new equipment item in the catalog.</summary>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] EquipmentDto dto, CancellationToken cancellationToken)
         {
@@ -29,6 +31,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        /// <summary>Updates an equipment item's details.</summary>
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] EquipmentDto dto, CancellationToken cancellationToken)
         {
@@ -36,6 +39,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        /// <summary>Deletes an equipment item by its identifier.</summary>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
