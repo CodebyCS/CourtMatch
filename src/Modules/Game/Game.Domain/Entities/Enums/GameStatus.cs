@@ -2,9 +2,9 @@
 
 public enum GameStatus
 {
-    PendingConfirmation, // aguarda confirmação de todos os jogadores
-    Confirmed,           // todos confirmaram, aguarda o dia/hora
-    InProgress,          // jogo a decorrer
-    Completed,           // resultado registado
-    Cancelled            // jogo cancelado
+    PendingConfirmation, // awaiting confirmation from all players
+    Confirmed,           // everyone has confirmed; awaiting the date and time.
+    InProgress,          // match in progress
+    Completed,           // recorded result
+    Cancelled            // match cancelled
 }

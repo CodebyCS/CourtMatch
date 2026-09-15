@@ -18,7 +18,10 @@ namespace Shared.Contracts.Middleware
         {
             _logger = logger;
         }
-
+        
+        /// <summary>Processes the next request component and converts exceptions into error responses.</summary>
+        /// <param name="context">The current HTTP request context.</param>
+        /// <param name="next">The next component in the request pipeline.</param>
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             try

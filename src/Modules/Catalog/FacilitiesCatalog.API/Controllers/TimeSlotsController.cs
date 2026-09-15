@@ -15,6 +15,7 @@ namespace FacilitiesCatalog.API.Controllers
             _timeSlotService = timeSlotService;
         }
 
+        /// <summary>Lists all time slots in the catalog.</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -22,6 +23,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>Creates a new time slot in the catalog.</summary>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TimeSlotDto dto, CancellationToken cancellationToken)
         {
@@ -29,6 +31,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        /// <summary>Updates a time slot's details.</summary>
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] TimeSlotDto dto, CancellationToken cancellationToken)
         {
@@ -36,6 +39,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok();
         }
 
+        /// <summary>Deletes a time slot by its identifier.</summary>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {

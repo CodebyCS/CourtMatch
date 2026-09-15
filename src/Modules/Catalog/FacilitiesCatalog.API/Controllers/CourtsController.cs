@@ -16,6 +16,8 @@ namespace FacilitiesCatalog.API.Controllers
             _courtService = courtService;
         }
 
+        // GetAll
+        /// <summary>Lists all padel courts.</summary>
         // GET: /api/courts
         [AllowAnonymous]
         [HttpGet]
@@ -25,6 +27,7 @@ namespace FacilitiesCatalog.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>Gets a court by its identifier.</summary>
         // GET: /api/courts/{id}
         [AllowAnonymous]
         [HttpGet("{id:guid}")]
@@ -34,7 +37,8 @@ namespace FacilitiesCatalog.API.Controllers
 
             return Ok(court);
         }
-
+        
+        /// <summary>Creates a new padel court. Requires the Manager role.</summary>
         // POST: /api/courts
         [Authorize(Roles = "Manager")]
         [HttpPost]
@@ -45,6 +49,7 @@ namespace FacilitiesCatalog.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = court.Id }, court);
         }
 
+        /// <summary>Updates a court's details and status. Requires the Manager role.</summary>
         // PUT: /api/courts/{id}
         [Authorize(Roles = "Manager")]
         [HttpPut("{id:guid}")]
@@ -54,6 +59,7 @@ namespace FacilitiesCatalog.API.Controllers
             return NoContent();
         }
 
+        /// <summary>Deletes a court by its identifier. Requires the Manager role.</summary>
         // DELETE: /api/courts/{id}
         [Authorize(Roles = "Manager")]
         [HttpDelete("{id:guid}")]
@@ -63,6 +69,7 @@ namespace FacilitiesCatalog.API.Controllers
             return NoContent();
         }
 
+        /// <summary>Marks a court as under maintenance. Requires the Manager role.</summary>
         // PATCH: /api/courts/{id}/block
         [Authorize(Roles = "Manager")]
         [HttpPatch("{id:guid}/block")]
@@ -75,6 +82,7 @@ namespace FacilitiesCatalog.API.Controllers
             return NoContent();
         }
 
+        /// <summary>Checks whether a court is available on the specified date and at the specified start time.</summary>
         // GET: /api/courts/{id}/availability?date=2026-09-10&startTime=18:00:00
         [AllowAnonymous]
         [HttpGet("{id:guid}/availability")]
